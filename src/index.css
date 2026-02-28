@@ -1,0 +1,107 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Calm dark theme — off-black + muted blue accents */
+    --background: 228 14% 7%;
+    --foreground: 220 13% 83%;
+
+    --card: 228 13% 10%;
+    --card-foreground: 220 13% 83%;
+
+    --popover: 228 13% 10%;
+    --popover-foreground: 220 13% 83%;
+
+    --primary: 220 55% 55%;
+    --primary-foreground: 220 20% 96%;
+
+    --secondary: 225 12% 15%;
+    --secondary-foreground: 220 13% 75%;
+
+    --muted: 225 12% 14%;
+    --muted-foreground: 220 10% 48%;
+
+    --accent: 225 12% 16%;
+    --accent-foreground: 220 13% 83%;
+
+    --destructive: 0 50% 48%;
+    --destructive-foreground: 0 0% 95%;
+
+    --border: 225 10% 16%;
+    --input: 225 10% 16%;
+    --ring: 220 55% 55%;
+
+    --radius: 0.5rem;
+
+    /* Muted status colors for dark theme */
+    --status-saved: 220 10% 48%;
+    --status-applied: 215 50% 52%;
+    --status-interviewing: 260 40% 55%;
+    --status-offered: 152 40% 42%;
+    --status-accepted: 152 45% 48%;
+    --status-rejected: 0 45% 52%;
+    --status-withdrawn: 220 10% 40%;
+
+    /* Muted source colors */
+    --source-linkedin: 201 55% 42%;
+    --source-indeed: 234 45% 48%;
+    --source-referral: 152 40% 42%;
+    --source-company: 260 40% 50%;
+    --source-recruiter: 38 50% 50%;
+
+    --sidebar-background: 228 13% 10%;
+    --sidebar-foreground: 220 13% 83%;
+    --sidebar-primary: 220 55% 55%;
+    --sidebar-primary-foreground: 220 20% 96%;
+    --sidebar-accent: 225 12% 16%;
+    --sidebar-accent-foreground: 220 13% 83%;
+    --sidebar-border: 225 10% 16%;
+    --sidebar-ring: 220 55% 55%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+}
+
+@layer utilities {
+  .glass {
+    @apply bg-card/80 backdrop-blur-xl border border-border;
+  }
+}
+
+/* Custom scrollbar — subtle dark */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: hsl(220 10% 22%);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(220 10% 30%);
+}
