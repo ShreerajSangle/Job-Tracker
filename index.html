@@ -6,20 +6,35 @@
     <title>JobTracker</title>
     <meta name="description" content="Track every job application in one clean dashboard." />
     <meta name="author" content="JobTracker" />
-
     <meta property="og:title" content="JobTracker" />
     <meta property="og:description" content="Track every job application in one clean dashboard." />
     <meta property="og:type" content="website" />
-
     <meta name="twitter:card" content="summary" />
     <meta name="twitter:title" content="JobTracker" />
     <meta name="twitter:description" content="Track every job application in one clean dashboard." />
-
-    <!-- Custom SVG favicon — chart uptrend line matching brand blue -->
+    <!-- SVG favicon — chart uptrend matching brand blue -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23172033'/%3E%3Cpath d='M6 22 L10 13 L15 18 L20 9 L26 22' stroke='%235b8dd9' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round' fill='none'/%3E%3Ccircle cx='26' cy='9' r='2' fill='%235b8dd9'/%3E%3C/svg%3E" />
-    <link rel="alternate icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23172033'/%3E%3Cpath d='M6 22 L10 13 L15 18 L20 9 L26 22' stroke='%235b8dd9' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round' fill='none'/%3E%3Ccircle cx='26' cy='9' r='2' fill='%235b8dd9'/%3E%3C/svg%3E" />
+    <!--
+      CRITICAL: Apply theme BEFORE React mounts to prevent flash of unstyled content (FOUC).
+      Reads localStorage key 'theme'. Defaults to 'dark' (the app's natural theme).
+      This script is intentionally synchronous and tiny.
+    -->
+    <script>
+      (function () {
+        try {
+          var stored = localStorage.getItem('theme');
+          // Default to dark — the app is designed dark-first
+          var isDark = stored ? stored === 'dark' : true;
+          document.documentElement.classList.toggle('dark', isDark);
+          // Write back so Navbar reads a consistent value
+          if (!stored) localStorage.setItem('theme', 'dark');
+        } catch (e) {
+          // localStorage blocked (private mode) — just apply dark by default
+          document.documentElement.classList.add('dark');
+        }
+      })();
+    </script>
   </head>
-
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>

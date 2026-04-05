@@ -5,39 +5,32 @@
 @tailwind utilities;
 
 @layer base {
+  /* ─────────────────────────────────────────────────────────
+     DARK MODE (default — app is dark-first)
+  ───────────────────────────────────────────────────────── */
   :root {
     /* Calm dark theme — off-black + muted blue accents */
     --background: 228 14% 7%;
     --foreground: 220 13% 83%;
-
     --card: 228 13% 10%;
     --card-foreground: 220 13% 83%;
-
     --popover: 228 13% 10%;
     --popover-foreground: 220 13% 83%;
-
     --primary: 220 55% 55%;
     --primary-foreground: 220 20% 96%;
-
     --secondary: 225 12% 15%;
     --secondary-foreground: 220 13% 75%;
-
     --muted: 225 12% 14%;
     --muted-foreground: 220 10% 48%;
-
     --accent: 225 12% 16%;
     --accent-foreground: 220 13% 83%;
-
     --destructive: 0 50% 48%;
     --destructive-foreground: 0 0% 95%;
-
     --border: 225 10% 16%;
     --input: 225 10% 16%;
     --ring: 220 55% 55%;
-
     --radius: 0.5rem;
-
-    /* Muted status colors for dark theme */
+    /* Status colors */
     --status-saved: 220 10% 48%;
     --status-applied: 215 50% 52%;
     --status-interviewing: 260 40% 55%;
@@ -45,14 +38,13 @@
     --status-accepted: 152 45% 48%;
     --status-rejected: 0 45% 52%;
     --status-withdrawn: 220 10% 40%;
-
-    /* Muted source colors */
+    /* Source colors */
     --source-linkedin: 201 55% 42%;
     --source-indeed: 234 45% 48%;
     --source-referral: 152 40% 42%;
     --source-company: 260 40% 50%;
     --source-recruiter: 38 50% 50%;
-
+    /* Sidebar */
     --sidebar-background: 228 13% 10%;
     --sidebar-foreground: 220 13% 83%;
     --sidebar-primary: 220 55% 55%;
@@ -62,12 +54,52 @@
     --sidebar-border: 225 10% 16%;
     --sidebar-ring: 220 55% 55%;
   }
+
+  /* ─────────────────────────────────────────────────────────
+     LIGHT MODE — applied when html does NOT have .dark class
+  ───────────────────────────────────────────────────────── */
+  html:not(.dark) {
+    --background: 220 20% 97%;
+    --foreground: 222 25% 15%;
+    --card: 0 0% 100%;
+    --card-foreground: 222 25% 15%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 25% 15%;
+    --primary: 220 60% 45%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 220 14% 92%;
+    --secondary-foreground: 222 20% 25%;
+    --muted: 220 14% 93%;
+    --muted-foreground: 220 10% 45%;
+    --accent: 220 14% 91%;
+    --accent-foreground: 222 25% 15%;
+    --destructive: 0 65% 48%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 220 13% 88%;
+    --input: 220 13% 88%;
+    --ring: 220 60% 45%;
+    /* Status colors — slightly more saturated for light bg */
+    --status-saved: 220 12% 52%;
+    --status-applied: 215 55% 46%;
+    --status-interviewing: 260 45% 50%;
+    --status-offered: 152 45% 38%;
+    --status-accepted: 152 50% 42%;
+    --status-rejected: 0 50% 48%;
+    --status-withdrawn: 220 12% 44%;
+    /* Sidebar */
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 222 25% 15%;
+    --sidebar-primary: 220 60% 45%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 220 14% 91%;
+    --sidebar-accent-foreground: 222 25% 15%;
+    --sidebar-border: 220 13% 88%;
+    --sidebar-ring: 220 60% 45%;
+  }
 }
 
 @layer base {
-  * {
-    @apply border-border;
-  }
+  * { @apply border-border; }
 
   html {
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
@@ -78,30 +110,21 @@
   body {
     @apply bg-background text-foreground;
     font-feature-settings: "rlig" 1, "calt" 1;
+    transition: background-color 200ms ease, color 200ms ease;
   }
 }
 
 @layer utilities {
-  .glass {
-    @apply bg-card/80 backdrop-blur-xl border border-border;
-  }
+  .glass { @apply bg-card/80 backdrop-blur-xl border border-border; }
 }
 
-/* Custom scrollbar — subtle dark */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-
+/* Custom scrollbar — subtle */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb {
-  background: hsl(220 10% 22%);
+  background: hsl(var(--border));
   border-radius: 3px;
 }
-
 ::-webkit-scrollbar-thumb:hover {
-  background: hsl(220 10% 30%);
+  background: hsl(var(--muted-foreground) / 0.5);
 }

@@ -8,30 +8,25 @@ import {
   DropdownMenuSeparator, DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 
 export function Navbar() {
   const { user, signOut } = useAuth();
   const navigate  = useNavigate();
   const location  = useLocation();
 
-  const [isDark, setIsDark] = useState(() => document.documentElement.classList.contains('dark'));
-
-  useEffect(() => {
-    // Apply stored theme on mount
-    const stored = localStorage.getItem('theme');
-    if (stored) {
-      const dark = stored === 'dark';
-      document.documentElement.classList.toggle('dark', dark);
-      setIsDark(dark);
-    }
-  }, []);
+  // Read initial state directly from the html class — the inline script in
+  // index.html already applied the correct class before React mounted, so
+  // this is always accurate with zero flicker.
+  const [isDark, setIsDark] = useState(
+    () => document.documentElement.classList.contains('dark')
+  );
 
   const toggleTheme = () => {
     const next = !isDark;
     setIsDark(next);
     document.documentElement.classList.toggle('dark', next);
-    localStorage.setItem('theme', next ? 'dark' : 'light');
+    try { localStorage.setItem('theme', next ? 'dark' : 'light'); } catch {/* private mode */}
   };
 
   const handleSignOut = async () => { await signOut(); navigate('/login'); };
@@ -62,9 +57,18 @@ export function Navbar() {
         <div className="flex items-center gap-2">
           <QuickAddJobForm />
 
-          {/* Dark mode toggle */}
-          <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={toggleTheme} title={isDark ? 'Switch to light' : 'Switch to dark'}>
-            {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+          {/* Dark/light mode toggle */}
+          <Button
+            variant="ghost" size="sm"
+            className="h-8 w-8 p-0"
+            onClick={toggleTheme}
+            aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+            title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+          >
+            {isDark
+              ? <Sun  className="h-4 w-4 transition-transform duration-200 rotate-0" />
+              : <Moon className="h-4 w-4 transition-transform duration-200 rotate-0" />
+            }
           </Button>
 
           {user && (
@@ -73,7 +77,7 @@ export function Navbar() {
                 <Button variant="ghost" className="relative h-8 w-8 rounded-full">
                   <Avatar className="h-8 w-8">
                     <AvatarFallback className="bg-primary/15 text-primary text-xs font-medium">
-                      {getInitials(user.email || '')}
+                      {getInitials(user.email || 'JT')}
                     </AvatarFallback>
                   </Avatar>
                 </Button>
