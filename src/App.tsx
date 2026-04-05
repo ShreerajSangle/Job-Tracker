@@ -48,10 +48,6 @@ const App = () => (
               }
             />
             <Route
-              path="/kanban"
-              element={<ProtectedRoute><JobsProvider><Dashboard /></JobsProvider></ProtectedRoute>}
-            />
-            <Route
               path="/settings"
               element={
                 <ProtectedRoute>
