@@ -2,7 +2,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { QuickAddJobForm } from '@/components/jobs/QuickAddJobForm';
 import { useAuth } from '@/hooks/useAuth';
-import { Briefcase, LogOut, LayoutDashboard, BarChart3 } from 'lucide-react';
+import { Briefcase, LogOut, LayoutDashboard, BarChart3, Settings } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -68,7 +68,7 @@ export function Navbar() {
 
         <div className="flex items-center gap-2">
           <QuickAddJobForm />
-          
+
           {user && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -86,6 +86,11 @@ export function Navbar() {
                     <p className="font-medium text-sm">{user.email}</p>
                   </div>
                 </div>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => navigate('/settings')}>
+                  <Settings className="mr-2 h-4 w-4" />
+                  Settings
+                </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleSignOut}>
                   <LogOut className="mr-2 h-4 w-4" />

@@ -4,8 +4,41 @@ import { useJobStats } from '@/hooks/useJobStats';
 import { SourceStatsChart } from '@/components/dashboard/SourceStatsChart';
 import { SourceInsights } from '@/components/dashboard/SourceInsights';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2, TrendingUp, Target, Clock } from 'lucide-react';
+import { Loader2, TrendingUp, Target, Clock, Download } from 'lucide-react';
 import { STATUS_CONFIG } from '@/types/job';
+import { Button } from '@/components/ui/button';
+
+function exportToCSV(jobs: ReturnType<typeof useJobs>['jobs']) {
+  const headers = [
+    'Company', 'Job Title', 'Status', 'Source', 'Location',
+    'Salary Min', 'Salary Max', 'Currency', 'Applied Date',
+    'Deadline', 'Job URL', 'Tags', 'Notes', 'Created At'
+  ];
+  const rows = jobs.map(j => [
+    `"${(j.company_name || '').replace(/"/g, '""')}"`,
+    `"${(j.job_title || '').replace(/"/g, '""')}"`,
+    j.status,
+    j.source || '',
+    `"${(j.location || '').replace(/"/g, '""')}"`,
+    j.salary_min ?? '',
+    j.salary_max ?? '',
+    j.currency || '',
+    j.applied_date || '',
+    j.deadline_date || '',
+    `"${(j.job_url || '').replace(/"/g, '""')}"`,
+    `"${(j.tags || []).join(', ')}"`,
+    `"${(j.notes || '').replace(/"/g, '""').replace(/\n/g, ' ')}"`,
+    j.created_at,
+  ]);
+  const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `job-tracker-export-${new Date().toISOString().slice(0, 10)}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
 
 export default function Insights() {
   const { jobs, loading } = useJobs();
@@ -28,11 +61,24 @@ export default function Insights() {
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <Navbar />
-      
+
       <main className="flex-1 container py-6 space-y-6">
-        <div>
-          <h1 className="text-2xl font-bold">Insights</h1>
-          <p className="text-muted-foreground">Track your job search performance</p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold">Insights</h1>
+            <p className="text-muted-foreground">Track your job search performance</p>
+          </div>
+          {jobs.length > 0 && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-2"
+              onClick={() => exportToCSV(jobs)}
+            >
+              <Download className="h-4 w-4" />
+              Export CSV
+            </Button>
+          )}
         </div>
 
         {jobs.length === 0 ? (
@@ -43,7 +89,6 @@ export default function Insights() {
           </div>
         ) : (
           <>
-            {/* Summary Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               <Card>
                 <CardHeader className="pb-2">
@@ -56,9 +101,7 @@ export default function Insights() {
                   <p className="text-3xl font-bold text-emerald-600">
                     {stats.successRate.toFixed(0)}%
                   </p>
-                  <p className="text-sm text-muted-foreground">
-                    Offers / Applications
-                  </p>
+                  <p className="text-sm text-muted-foreground">Offers / Applications</p>
                 </CardContent>
               </Card>
 
@@ -70,12 +113,8 @@ export default function Insights() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-3xl font-bold text-blue-600">
-                    {activeJobs.length}
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    In progress
-                  </p>
+                  <p className="text-3xl font-bold text-blue-600">{activeJobs.length}</p>
+                  <p className="text-sm text-muted-foreground">In progress</p>
                 </CardContent>
               </Card>
 
@@ -88,14 +127,12 @@ export default function Insights() {
                 </CardHeader>
                 <CardContent>
                   <p className="text-3xl font-bold text-violet-600">
-                    {totalApplied > 0 
+                    {totalApplied > 0
                       ? ((stats.byStatus.interviewing + stats.byStatus.offered + stats.byStatus.accepted) / totalApplied * 100).toFixed(0)
                       : 0
                     }%
                   </p>
-                  <p className="text-sm text-muted-foreground">
-                    Applications → Interviews
-                  </p>
+                  <p className="text-sm text-muted-foreground">Applications → Interviews</p>
                 </CardContent>
               </Card>
 
@@ -107,23 +144,14 @@ export default function Insights() {
                 </CardHeader>
                 <CardContent>
                   <p className="text-3xl font-bold">{totalApplied}</p>
-                  <p className="text-sm text-muted-foreground">
-                    Submitted so far
-                  </p>
+                  <p className="text-sm text-muted-foreground">Submitted so far</p>
                 </CardContent>
               </Card>
             </div>
 
-            {/* Source Insights */}
-            <SourceInsights
-              bestSource={stats.bestSource}
-              worstSource={stats.worstSource}
-            />
-
-            {/* Source Stats Chart */}
+            <SourceInsights bestSource={stats.bestSource} worstSource={stats.worstSource} />
             <SourceStatsChart bySource={stats.bySource} />
 
-            {/* Status Breakdown */}
             <Card>
               <CardHeader>
                 <CardTitle className="text-lg">Application Status Breakdown</CardTitle>
@@ -136,7 +164,6 @@ export default function Insights() {
                         {stats.byStatus[status as keyof typeof stats.byStatus]}
                       </div>
                       <div className="text-sm text-muted-foreground flex items-center justify-center gap-1">
-                        <span>{config.icon}</span>
                         <span>{config.label}</span>
                       </div>
                     </div>

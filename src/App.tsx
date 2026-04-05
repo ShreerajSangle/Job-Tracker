@@ -9,6 +9,8 @@ import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import Dashboard from "./pages/Dashboard";
 import Insights from "./pages/Insights";
+import Kanban from "./pages/Kanban";
+import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -34,13 +36,27 @@ const App = () => (
           <Route
             path="/insights"
             element={
-          <ProtectedRoute>
+              <ProtectedRoute>
                 <Insights />
               </ProtectedRoute>
             }
           />
-          {/* /kanban redirects to dashboard */}
-          <Route path="/kanban" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+          <Route
+            path="/kanban"
+            element={
+              <ProtectedRoute>
+                <Kanban />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/settings"
+            element={
+              <ProtectedRoute>
+                <Settings />
+              </ProtectedRoute>
+            }
+          />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
