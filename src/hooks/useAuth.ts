@@ -8,9 +8,6 @@ export function useAuth() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Single source of truth: onAuthStateChange fires immediately with the
-    // current session, then again on every subsequent auth event.
-    // This avoids the race condition of calling getSession() in parallel.
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (_event, session) => {
         setSession(session);
@@ -18,7 +15,6 @@ export function useAuth() {
         setLoading(false);
       }
     );
-
     return () => subscription.unsubscribe();
   }, []);
 
@@ -27,17 +23,15 @@ export function useAuth() {
       email,
       password,
       options: {
-        emailRedirectTo: window.location.origin,
+        // Redirect to /dashboard after email confirmation instead of homepage
+        emailRedirectTo: `${window.location.origin}/dashboard`,
       },
     });
     return { data, error };
   };
 
   const signIn = async (email: string, password: string) => {
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
     return { data, error };
   };
 
@@ -46,12 +40,5 @@ export function useAuth() {
     return { error };
   };
 
-  return {
-    user,
-    session,
-    loading,
-    signUp,
-    signIn,
-    signOut,
-  };
+  return { user, session, loading, signUp, signIn, signOut };
 }
