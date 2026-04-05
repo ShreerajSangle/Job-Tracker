@@ -4,11 +4,26 @@ import { JobDocument, DocumentType } from '@/types/job';
 import { useAuth } from './useAuth';
 import { toast } from '@/hooks/use-toast';
 
+/** Returns true if a Supabase StorageError is a "bucket not found" error */
+function isBucketNotFound(err: unknown): boolean {
+  if (!err || typeof err !== 'object') return false;
+  const e = err as Record<string, unknown>;
+  const msg = (e.message as string | undefined) ?? '';
+  const errCode = (e.error as string | undefined) ?? '';
+  return (
+    msg.toLowerCase().includes('bucket not found') ||
+    errCode.toLowerCase().includes('no_such_bucket') ||
+    (e as { statusCode?: string }).statusCode === '404'
+  );
+}
+
 export function useJobDocuments(jobId: string) {
   const { user } = useAuth();
   const [documents, setDocuments] = useState<JobDocument[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
+  /** true when the storage bucket hasn't been created in Supabase yet */
+  const [bucketMissing, setBucketMissing] = useState(false);
 
   const fetchDocuments = useCallback(async () => {
     if (!user || !jobId) return;
@@ -50,7 +65,19 @@ export function useJobDocuments(jobId: string) {
         .from('job-documents')
         .upload(filePath, file);
 
-      if (uploadError) throw uploadError;
+      if (uploadError) {
+        if (isBucketNotFound(uploadError)) {
+          setBucketMissing(true);
+          toast({
+            title: 'Storage not set up',
+            description:
+              'The "job-documents" storage bucket does not exist in your Supabase project. Go to Supabase → Storage → New bucket, create a bucket named "job-documents" and set it to private.',
+            variant: 'destructive',
+          });
+          return { error: uploadError };
+        }
+        throw uploadError;
+      }
 
       const { data, error: insertError } = await supabase
         .from('job_documents')
@@ -61,7 +88,8 @@ export function useJobDocuments(jobId: string) {
           file_path: filePath,
           file_size: file.size,
           document_type: documentType,
-          is_primary: documents.filter(d => d.document_type === documentType).length === 0,
+          is_primary:
+            documents.filter((d) => d.document_type === documentType).length === 0,
         })
         .select()
         .single();
@@ -135,6 +163,7 @@ export function useJobDocuments(jobId: string) {
     documents,
     loading,
     uploading,
+    bucketMissing,
     uploadDocument,
     downloadDocument,
     deleteDocument,
