@@ -1,23 +1,9 @@
-// Supabase Edge Function: given a job posting URL, fetches the page
-// server-side (avoids browser CORS entirely) and asks Groq to extract
-// structured fields for the "Add Job" form. The frontend always treats the
-// result as a pre-fill suggestion — the user reviews/edits before saving,
-// nothing is auto-saved from here.
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS',
-};
-
 const FETCH_TIMEOUT_MS = 10_000;
 const MAX_HTML_BYTES = 2_000_000; // 2 MB — plenty for a job posting page
 const MAX_TEXT_CHARS = 8_000; // keeps the Groq prompt small, fast, and cheap
-
 const GROQ_MODEL = 'llama-3.3-70b-versatile';
 
-interface ExtractedJob {
+export interface ExtractedJob {
   job_title: string | null;
   company_name: string | null;
   location: string | null;
@@ -33,7 +19,7 @@ interface ExtractedJob {
  * hostname-level check, not a DNS-resolution check, so it won't catch DNS
  * rebinding — acceptable for this app's threat model, but worth knowing.
  */
-function assertPublicHttpUrl(rawUrl: string): URL {
+export function assertPublicHttpUrl(rawUrl: string): URL {
   const url = new URL(rawUrl);
   if (url.protocol !== 'http:' && url.protocol !== 'https:') {
     throw new Error('URL must use http or https');
@@ -60,7 +46,7 @@ function assertPublicHttpUrl(rawUrl: string): URL {
 }
 
 /** Strips a job posting page down to plain, readable text for the LLM prompt. */
-function htmlToReadableText(html: string): string {
+export function htmlToReadableText(html: string): string {
   const withoutNoise = html
     .replace(/<script[\s\S]*?<\/script>/gi, ' ')
     .replace(/<style[\s\S]*?<\/style>/gi, ' ')
@@ -85,7 +71,7 @@ function htmlToReadableText(html: string): string {
   return `${title}\n\n${text}`.slice(0, MAX_TEXT_CHARS);
 }
 
-async function fetchPageText(url: URL): Promise<string> {
+export async function fetchPageText(url: URL): Promise<string> {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
   try {
@@ -124,8 +110,8 @@ async function fetchPageText(url: URL): Promise<string> {
   }
 }
 
-async function extractWithGroq(pageText: string, sourceHost: string): Promise<ExtractedJob> {
-  const groqApiKey = Deno.env.get('GROQ_API_KEY');
+export async function extractWithGroq(pageText: string, sourceHost: string): Promise<ExtractedJob> {
+  const groqApiKey = process.env.GROQ_API_KEY;
   if (!groqApiKey) throw new Error('AI extraction is not configured (missing GROQ_API_KEY)');
 
   const prompt = `You extract structured job-posting details from raw page text. Respond with ONLY a JSON object (no markdown, no commentary) matching exactly this shape:
@@ -184,46 +170,3 @@ ${pageText}
     source: asStringOrNull(p.source),
   };
 }
-
-Deno.serve(async (req) => {
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
-  }
-  if (req.method !== 'POST') {
-    return new Response(JSON.stringify({ error: 'Method not allowed' }), {
-      status: 405,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
-  }
-
-  try {
-    const authHeader = req.headers.get('Authorization');
-    if (!authHeader) throw new Error('Missing authorization header');
-
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-    const anonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
-    const callerClient = createClient(supabaseUrl, anonKey, {
-      global: { headers: { Authorization: authHeader } },
-    });
-    const { data: { user }, error: authError } = await callerClient.auth.getUser();
-    if (authError || !user) throw new Error('Invalid or expired session');
-
-    const { url: rawUrl } = await req.json();
-    if (!rawUrl || typeof rawUrl !== 'string') throw new Error('Missing "url" in request body');
-
-    const url = assertPublicHttpUrl(rawUrl);
-    const pageText = await fetchPageText(url);
-    if (!pageText.trim()) throw new Error('Could not read any content from that page');
-
-    const extracted = await extractWithGroq(pageText, url.hostname);
-
-    return new Response(JSON.stringify({ data: extracted }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
-  } catch (err) {
-    return new Response(
-      JSON.stringify({ error: err instanceof Error ? err.message : 'Unknown error' }),
-      { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
-    );
-  }
-});

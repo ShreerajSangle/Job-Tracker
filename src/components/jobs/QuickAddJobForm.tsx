@@ -31,6 +31,7 @@ import { toast } from '@/hooks/use-toast';
 import { JobStatus, JobSource, STATUS_CONFIG, SOURCE_CONFIG } from '@/types/job';
 import { jobSchema, JobFormData } from '@/lib/jobSchema';
 import { guessSource } from '@/lib/guessSource';
+import { callApi } from '@/lib/callApi';
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
 
@@ -136,31 +137,15 @@ export function QuickAddJobForm({ trigger }: QuickAddJobFormProps) {
     const url = extractUrl.trim();
     if (!url) return;
     setExtracting(true);
-    const { data, error } = await supabase.functions.invoke('extract-job', { body: { url } });
+    const result = await callApi<ExtractedJob>('/api/extract-job', { url });
     setExtracting(false);
 
-    if (error || !data?.data) {
-      // supabase-js doesn't parse the Edge Function's JSON error body for us —
-      // do it ourselves so failures are actually diagnosable instead of always
-      // showing the same generic message.
-      let description = 'Please enter the details manually.';
-      const context = (error as { context?: Response })?.context;
-      if (context) {
-        try {
-          const body = await context.clone().json();
-          if (body?.error) description = body.error;
-        } catch {
-          try {
-            const text = await context.clone().text();
-            if (text) description = text.slice(0, 300);
-          } catch { /* keep the generic fallback */ }
-        }
-      }
-      toast({ title: "Couldn't auto-fill", description, variant: 'destructive' });
+    if ('error' in result) {
+      toast({ title: "Couldn't auto-fill", description: result.error, variant: 'destructive' });
       return;
     }
 
-    const extracted = data.data as ExtractedJob;
+    const extracted = result.data;
     if (extracted.job_title) setValue('job_title', extracted.job_title, { shouldTouch: true });
     if (extracted.company_name) setValue('company_name', extracted.company_name, { shouldTouch: true });
     if (extracted.location) setValue('location', extracted.location, { shouldTouch: true });
