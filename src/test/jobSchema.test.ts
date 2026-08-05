@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { jobSchema } from '@/components/jobs/QuickAddJobForm';
+import { jobSchema } from '@/lib/jobSchema';
 
 const base = {
   company_name: 'Acme',
