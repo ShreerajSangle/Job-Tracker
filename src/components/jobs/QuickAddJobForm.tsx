@@ -4,7 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import {
   Plus, Command, Loader2, Upload, FileText, X,
   Building2, Briefcase, Link2, DollarSign, Calendar,
-  StickyNote, AlignLeft, ChevronDown, CheckCircle2,
+  StickyNote, AlignLeft, ChevronDown, CheckCircle2, Sparkles, MapPin,
 } from 'lucide-react';
 import {
   Dialog,
@@ -27,10 +27,21 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { useJobsContext } from '@/context/JobsContext';
 import { supabase } from '@/integrations/supabase/client';
+import { toast } from '@/hooks/use-toast';
 import { JobStatus, JobSource, STATUS_CONFIG, SOURCE_CONFIG } from '@/types/job';
 import { jobSchema, JobFormData } from '@/lib/jobSchema';
+import { guessSource } from '@/lib/guessSource';
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
+
+interface ExtractedJob {
+  job_title: string | null;
+  company_name: string | null;
+  location: string | null;
+  job_description: string | null;
+  salary_range: string | null;
+  source: string | null;
+}
 
 interface QuickAddJobFormProps {
   trigger?: React.ReactNode;
@@ -71,6 +82,8 @@ export function QuickAddJobForm({ trigger }: QuickAddJobFormProps) {
   const [fileError, setFileError]     = useState<string | null>(null);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [showOptional, setShowOptional]     = useState(false);
+  const [extractUrl, setExtractUrl]         = useState('');
+  const [extracting, setExtracting]         = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const formBodyRef  = useRef<HTMLDivElement>(null);
   const { createJob } = useJobsContext();
@@ -114,8 +127,42 @@ export function QuickAddJobForm({ trigger }: QuickAddJobFormProps) {
       setUploadProgress(0);
       setShowOptional(false);
       setSuccess(false);
+      setExtractUrl('');
     }, 300);
   }, [reset]);
+
+  // ── AI auto-fill ─────────────────────────────────────────────────────────
+  const handleAutoFill = useCallback(async () => {
+    const url = extractUrl.trim();
+    if (!url) return;
+    setExtracting(true);
+    const { data, error } = await supabase.functions.invoke('extract-job', { body: { url } });
+    setExtracting(false);
+
+    if (error || !data?.data) {
+      toast({
+        title: "Couldn't auto-fill",
+        description: 'Please enter the details manually.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    const extracted = data.data as ExtractedJob;
+    if (extracted.job_title) setValue('job_title', extracted.job_title, { shouldTouch: true });
+    if (extracted.company_name) setValue('company_name', extracted.company_name, { shouldTouch: true });
+    if (extracted.location) setValue('location', extracted.location, { shouldTouch: true });
+    setValue('job_url', url, { shouldTouch: true });
+    setValue('source', guessSource(extracted.source, url), { shouldTouch: true });
+
+    const description = extracted.salary_range
+      ? [extracted.job_description, `Salary: ${extracted.salary_range}`].filter(Boolean).join('\n\n')
+      : extracted.job_description;
+    if (description) setValue('job_description', description, { shouldTouch: true });
+
+    setShowOptional(true);
+    toast({ title: 'Details filled in', description: 'Review the extracted information before saving.' });
+  }, [extractUrl, setValue]);
 
   // ── file handling ────────────────────────────────────────────────────────
   const handleFileSelect = useCallback((file: File) => {
@@ -150,6 +197,7 @@ export function QuickAddJobForm({ trigger }: QuickAddJobFormProps) {
       source:          data.source as JobSource | undefined,
       job_url:         data.job_url || undefined,
       job_description: data.job_description || undefined,
+      location:        data.location || undefined,
       salary_min:      data.salary_min ?? undefined,
       salary_max:      data.salary_max ?? undefined,
       applied_date:    data.applied_date || undefined,
@@ -261,6 +309,39 @@ export function QuickAddJobForm({ trigger }: QuickAddJobFormProps) {
         >
           <form id="add-job-form" onSubmit={handleSubmit(onSubmit)} noValidate>
             <div className="px-6 py-5 space-y-5">
+
+              {/* ── AI auto-fill ──────────────────────────────────────── */}
+              <div className="rounded-lg border border-primary/20 bg-primary/5 p-3 space-y-2">
+                <Label className="flex items-center gap-1.5 text-xs text-foreground/80 font-medium">
+                  <Sparkles className="h-3.5 w-3.5 text-primary shrink-0" />
+                  Fill with Groq AI
+                </Label>
+                <div className="flex gap-2">
+                  <Input
+                    placeholder="Paste a job posting URL…"
+                    value={extractUrl}
+                    onChange={(e) => setExtractUrl(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') { e.preventDefault(); handleAutoFill(); }
+                    }}
+                    className="bg-muted/20 border-border/40 focus-visible:ring-1 text-sm"
+                  />
+                  <Button
+                    type="button"
+                    size="sm"
+                    onClick={handleAutoFill}
+                    disabled={extracting || !extractUrl.trim()}
+                    className="shrink-0"
+                  >
+                    {extracting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : 'Auto-fill details'}
+                  </Button>
+                </div>
+                <p className="text-[11px] text-muted-foreground/70">
+                  Review the extracted information before saving.
+                </p>
+              </div>
+
+              <Separator className="bg-border/30" />
 
               {/* ── 1. Company Name ──────────────────────────────────── */}
               <div className="space-y-1.5">
@@ -424,6 +505,22 @@ export function QuickAddJobForm({ trigger }: QuickAddJobFormProps) {
                     ))}
                   </SelectContent>
                 </Select>
+              </div>
+
+              <Separator className="bg-border/30" />
+
+              {/* ── 7. Location ───────────────────────────────────────── */}
+              <div className="space-y-1.5">
+                <Label htmlFor="location" className="flex items-center gap-1.5 text-xs text-foreground/70">
+                  <MapPin className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                  Location
+                </Label>
+                <Input
+                  id="location"
+                  placeholder="e.g., Remote, San Francisco CA"
+                  {...register('location')}
+                  className="bg-muted/20 border-border/40 focus-visible:ring-1 text-sm"
+                />
               </div>
 
               {/* ── Optional extras (collapsible) ─────────────────────── */}

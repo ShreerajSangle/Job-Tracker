@@ -17,6 +17,7 @@ export const jobSchema = z.object({
                      .optional()
                      .or(z.literal('')),
   job_description: z.string().max(10000).optional(),
+  location:        z.string().max(255).optional(),
   salary_min:      optionalNonNegativeNumber,
   salary_max:      optionalNonNegativeNumber,
   applied_date:    z.string().optional(),
