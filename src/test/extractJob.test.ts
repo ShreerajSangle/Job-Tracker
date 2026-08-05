@@ -25,6 +25,25 @@ describe('assertPublicHttpUrl', () => {
     expect(() => assertPublicHttpUrl('http://printer.local/')).toThrow();
     expect(() => assertPublicHttpUrl('http://db.internal/')).toThrow();
   });
+
+  it('rejects IPv6 loopback, unique-local, and link-local addresses', () => {
+    expect(() => assertPublicHttpUrl('http://[::1]/')).toThrow();
+    expect(() => assertPublicHttpUrl('http://[::]/')).toThrow();
+    expect(() => assertPublicHttpUrl('http://[fd00::1]/')).toThrow();
+    expect(() => assertPublicHttpUrl('http://[fc00::1]/')).toThrow();
+    expect(() => assertPublicHttpUrl('http://[fe80::1]/')).toThrow();
+  });
+
+  it('rejects IPv4-mapped IPv6 addresses that resolve to private ranges', () => {
+    expect(() => assertPublicHttpUrl('http://[::ffff:127.0.0.1]/')).toThrow();
+    expect(() => assertPublicHttpUrl('http://[::ffff:7f00:1]/')).toThrow();
+    expect(() => assertPublicHttpUrl('http://[::ffff:169.254.169.254]/')).toThrow();
+  });
+
+  it('accepts a public IPv6 address', () => {
+    // 2606:4700:4700::1111 is a real public Cloudflare DNS address
+    expect(() => assertPublicHttpUrl('http://[2606:4700:4700::1111]/')).not.toThrow();
+  });
 });
 
 describe('htmlToReadableText', () => {
