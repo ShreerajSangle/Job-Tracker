@@ -2,12 +2,15 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from '@/hooks/use-toast';
-import { Eye, EyeOff, Loader2, ArrowRight, CheckCircle2 } from 'lucide-react';
+import { Eye, EyeOff, Loader2, ArrowRight, CheckCircle2, Mail, ArrowLeft } from 'lucide-react';
+
+type Mode = 'signin' | 'forgot' | 'sent';
 
 export default function LoginPage() {
-  const { signIn } = useAuth();
+  const { signIn, resetPasswordForEmail } = useAuth();
   const navigate   = useNavigate();
 
+  const [mode,     setMode]     = useState<Mode>('signin');
   const [email,    setEmail]    = useState('');
   const [password, setPassword] = useState('');
   const [showPw,   setShowPw]   = useState(false);
@@ -24,6 +27,18 @@ export default function LoginPage() {
     } else {
       setSuccess(true);
       setTimeout(() => navigate('/dashboard'), 600);
+    }
+  };
+
+  const handleForgotSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    const { error } = await resetPasswordForEmail(email);
+    setLoading(false);
+    if (error) {
+      toast({ title: 'Could not send reset email', description: error.message, variant: 'destructive' });
+    } else {
+      setMode('sent');
     }
   };
 
@@ -116,97 +131,187 @@ export default function LoginPage() {
             <span className="font-semibold text-[hsl(220,13%,83%)] tracking-tight">JobTracker</span>
           </div>
 
-          {/* Heading */}
-          <div className="space-y-1.5">
-            <h2 className="text-2xl font-bold text-[hsl(220,13%,90%)] tracking-tight">Welcome back</h2>
-            <p className="text-sm text-[hsl(220,10%,48%)]">
-              Don&apos;t have an account?{' '}
-              <Link to="/signup" className="text-[hsl(220,55%,65%)] hover:text-[hsl(220,55%,72%)] transition-colors font-medium">
-                Sign up free
-              </Link>
-            </p>
-          </div>
-
-          {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Email */}
-            <div className="space-y-1.5">
-              <label htmlFor="email" className="text-xs font-medium text-[hsl(220,10%,55%)] uppercase tracking-wider">
-                Email address
-              </label>
-              <input
-                id="email"
-                type="email"
-                autoComplete="email"
-                required
-                value={email}
-                onChange={e => setEmail(e.target.value)}
-                placeholder="you@example.com"
-                className="w-full h-11 rounded-lg border border-[hsl(225,10%,18%)] bg-[hsl(228,13%,10%)] px-3.5 text-sm text-[hsl(220,13%,83%)] placeholder:text-[hsl(220,10%,32%)] outline-none transition-all focus:border-[hsl(220,55%,55%)] focus:ring-2 focus:ring-[hsl(220,55%,55%)]/20"
-              />
-            </div>
-
-            {/* Password */}
-            <div className="space-y-1.5">
-              <label htmlFor="password" className="text-xs font-medium text-[hsl(220,10%,55%)] uppercase tracking-wider">
-                Password
-              </label>
-              <div className="relative">
-                <input
-                  id="password"
-                  type={showPw ? 'text' : 'password'}
-                  autoComplete="current-password"
-                  required
-                  value={password}
-                  onChange={e => setPassword(e.target.value)}
-                  placeholder="\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022"
-                  className="w-full h-11 rounded-lg border border-[hsl(225,10%,18%)] bg-[hsl(228,13%,10%)] px-3.5 pr-10 text-sm text-[hsl(220,13%,83%)] placeholder:text-[hsl(220,10%,32%)] outline-none transition-all focus:border-[hsl(220,55%,55%)] focus:ring-2 focus:ring-[hsl(220,55%,55%)]/20"
-                />
-                <button
-                  type="button"
-                  tabIndex={-1}
-                  onClick={() => setShowPw(p => !p)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[hsl(220,10%,40%)] hover:text-[hsl(220,10%,60%)] transition-colors"
-                >
-                  {showPw ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                </button>
+          {mode === 'sent' ? (
+            /* \u2500\u2500 Reset email sent confirmation \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */
+            <div className="space-y-6 text-center">
+              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl border border-[hsl(225,10%,18%)] bg-[hsl(228,13%,10%)]">
+                <Mail className="h-7 w-7 text-[hsl(220,55%,65%)]" />
               </div>
+              <div className="space-y-2">
+                <h2 className="text-xl font-bold text-[hsl(220,13%,90%)] tracking-tight">Check your inbox</h2>
+                <p className="text-sm text-[hsl(220,10%,48%)] leading-relaxed">
+                  If an account exists for <span className="text-[hsl(220,13%,75%)]">{email}</span>, we've sent a
+                  password reset link. Click it to choose a new password.
+                </p>
+              </div>
+              <button
+                onClick={() => setMode('signin')}
+                className="inline-flex items-center gap-1.5 text-sm text-[hsl(220,55%,65%)] hover:text-[hsl(220,55%,72%)] transition-colors font-medium"
+              >
+                <ArrowLeft className="h-3.5 w-3.5" /> Back to sign in
+              </button>
             </div>
+          ) : mode === 'forgot' ? (
+            <>
+              {/* \u2500\u2500 Forgot password heading \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */}
+              <div className="space-y-1.5">
+                <button
+                  onClick={() => setMode('signin')}
+                  className="inline-flex items-center gap-1.5 text-xs text-[hsl(220,10%,48%)] hover:text-[hsl(220,13%,75%)] transition-colors mb-1"
+                >
+                  <ArrowLeft className="h-3.5 w-3.5" /> Back to sign in
+                </button>
+                <h2 className="text-2xl font-bold text-[hsl(220,13%,90%)] tracking-tight">Reset your password</h2>
+                <p className="text-sm text-[hsl(220,10%,48%)]">
+                  Enter your email and we&apos;ll send you a link to reset it.
+                </p>
+              </div>
 
-            {/* Submit */}
-            <button
-              type="submit"
-              disabled={loading || success}
-              className="relative w-full h-11 rounded-lg font-medium text-sm transition-all overflow-hidden"
-              style={{
-                background: success
-                  ? 'hsl(152,45%,35%)'
-                  : 'linear-gradient(135deg, hsl(220,55%,52%) 0%, hsl(240,50%,58%) 100%)',
-                color: 'hsl(220,20%,96%)',
-                boxShadow: success ? 'none' : '0 0 24px hsl(220,55%,55%,0.25), inset 0 1px 0 hsl(220,55%,70%,0.2)',
-              }}
-            >
-              <span className={`flex items-center justify-center gap-2 transition-all duration-300 ${
-                loading || success ? 'opacity-0 scale-75' : 'opacity-100 scale-100'
-              }`}>
-                Sign In <ArrowRight className="h-4 w-4" />
-              </span>
-              {loading && (
-                <span className="absolute inset-0 flex items-center justify-center">
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                </span>
-              )}
-              {success && (
-                <span className="absolute inset-0 flex items-center justify-center">
-                  <CheckCircle2 className="h-5 w-5 text-emerald-300" />
-                </span>
-              )}
-            </button>
-          </form>
+              {/* \u2500\u2500 Forgot password form \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 */}
+              <form onSubmit={handleForgotSubmit} className="space-y-4">
+                <div className="space-y-1.5">
+                  <label htmlFor="forgot-email" className="text-xs font-medium text-[hsl(220,10%,55%)] uppercase tracking-wider">
+                    Email address
+                  </label>
+                  <input
+                    id="forgot-email"
+                    type="email"
+                    autoComplete="email"
+                    required
+                    value={email}
+                    onChange={e => setEmail(e.target.value)}
+                    placeholder="you@example.com"
+                    className="w-full h-11 rounded-lg border border-[hsl(225,10%,18%)] bg-[hsl(228,13%,10%)] px-3.5 text-sm text-[hsl(220,13%,83%)] placeholder:text-[hsl(220,10%,32%)] outline-none transition-all focus:border-[hsl(220,55%,55%)] focus:ring-2 focus:ring-[hsl(220,55%,55%)]/20"
+                  />
+                </div>
 
-          <p className="text-center text-[11px] text-[hsl(220,10%,32%)]">
-            By signing in you agree to our terms of service.
-          </p>
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="relative w-full h-11 rounded-lg font-medium text-sm transition-all overflow-hidden"
+                  style={{
+                    background: 'linear-gradient(135deg, hsl(220,55%,52%) 0%, hsl(240,50%,58%) 100%)',
+                    color: 'hsl(220,20%,96%)',
+                    boxShadow: '0 0 24px hsl(220,55%,55%,0.25), inset 0 1px 0 hsl(220,55%,70%,0.2)',
+                  }}
+                >
+                  <span className={`flex items-center justify-center gap-2 transition-all duration-300 ${
+                    loading ? 'opacity-0 scale-75' : 'opacity-100 scale-100'
+                  }`}>
+                    Send Reset Link <ArrowRight className="h-4 w-4" />
+                  </span>
+                  {loading && (
+                    <span className="absolute inset-0 flex items-center justify-center">
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    </span>
+                  )}
+                </button>
+              </form>
+            </>
+          ) : (
+            <>
+              {/* Heading */}
+              <div className="space-y-1.5">
+                <h2 className="text-2xl font-bold text-[hsl(220,13%,90%)] tracking-tight">Welcome back</h2>
+                <p className="text-sm text-[hsl(220,10%,48%)]">
+                  Don&apos;t have an account?{' '}
+                  <Link to="/signup" className="text-[hsl(220,55%,65%)] hover:text-[hsl(220,55%,72%)] transition-colors font-medium">
+                    Sign up free
+                  </Link>
+                </p>
+              </div>
+
+              {/* Form */}
+              <form onSubmit={handleSubmit} className="space-y-4">
+                {/* Email */}
+                <div className="space-y-1.5">
+                  <label htmlFor="email" className="text-xs font-medium text-[hsl(220,10%,55%)] uppercase tracking-wider">
+                    Email address
+                  </label>
+                  <input
+                    id="email"
+                    type="email"
+                    autoComplete="email"
+                    required
+                    value={email}
+                    onChange={e => setEmail(e.target.value)}
+                    placeholder="you@example.com"
+                    className="w-full h-11 rounded-lg border border-[hsl(225,10%,18%)] bg-[hsl(228,13%,10%)] px-3.5 text-sm text-[hsl(220,13%,83%)] placeholder:text-[hsl(220,10%,32%)] outline-none transition-all focus:border-[hsl(220,55%,55%)] focus:ring-2 focus:ring-[hsl(220,55%,55%)]/20"
+                  />
+                </div>
+
+                {/* Password */}
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <label htmlFor="password" className="text-xs font-medium text-[hsl(220,10%,55%)] uppercase tracking-wider">
+                      Password
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => setMode('forgot')}
+                      className="text-xs text-[hsl(220,55%,65%)] hover:text-[hsl(220,55%,72%)] transition-colors font-medium"
+                    >
+                      Forgot password?
+                    </button>
+                  </div>
+                  <div className="relative">
+                    <input
+                      id="password"
+                      type={showPw ? 'text' : 'password'}
+                      autoComplete="current-password"
+                      required
+                      value={password}
+                      onChange={e => setPassword(e.target.value)}
+                      placeholder="\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022"
+                      className="w-full h-11 rounded-lg border border-[hsl(225,10%,18%)] bg-[hsl(228,13%,10%)] px-3.5 pr-10 text-sm text-[hsl(220,13%,83%)] placeholder:text-[hsl(220,10%,32%)] outline-none transition-all focus:border-[hsl(220,55%,55%)] focus:ring-2 focus:ring-[hsl(220,55%,55%)]/20"
+                    />
+                    <button
+                      type="button"
+                      tabIndex={-1}
+                      onClick={() => setShowPw(p => !p)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-[hsl(220,10%,40%)] hover:text-[hsl(220,10%,60%)] transition-colors"
+                    >
+                      {showPw ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Submit */}
+                <button
+                  type="submit"
+                  disabled={loading || success}
+                  className="relative w-full h-11 rounded-lg font-medium text-sm transition-all overflow-hidden"
+                  style={{
+                    background: success
+                      ? 'hsl(152,45%,35%)'
+                      : 'linear-gradient(135deg, hsl(220,55%,52%) 0%, hsl(240,50%,58%) 100%)',
+                    color: 'hsl(220,20%,96%)',
+                    boxShadow: success ? 'none' : '0 0 24px hsl(220,55%,55%,0.25), inset 0 1px 0 hsl(220,55%,70%,0.2)',
+                  }}
+                >
+                  <span className={`flex items-center justify-center gap-2 transition-all duration-300 ${
+                    loading || success ? 'opacity-0 scale-75' : 'opacity-100 scale-100'
+                  }`}>
+                    Sign In <ArrowRight className="h-4 w-4" />
+                  </span>
+                  {loading && (
+                    <span className="absolute inset-0 flex items-center justify-center">
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    </span>
+                  )}
+                  {success && (
+                    <span className="absolute inset-0 flex items-center justify-center">
+                      <CheckCircle2 className="h-5 w-5 text-emerald-300" />
+                    </span>
+                  )}
+                </button>
+              </form>
+
+              <p className="text-center text-[11px] text-[hsl(220,10%,32%)]">
+                By signing in you agree to our terms of service.
+              </p>
+            </>
+          )}
         </div>
       </div>
 

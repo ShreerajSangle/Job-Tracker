@@ -12,9 +12,18 @@ export function useJobs() {
   // Job IDs that reached "interviewing" at any point, even if later rejected —
   // current `status` alone under-counts the interview funnel for such jobs.
   const [everInterviewedJobIds, setEverInterviewedJobIds] = useState<Set<string>>(new Set());
+  // Job IDs that have at least one uploaded document — lets the dashboard
+  // table show a Resume indicator per row without a per-row query.
+  const [jobIdsWithDocuments, setJobIdsWithDocuments] = useState<Set<string>>(new Set());
 
   const fetchJobs = useCallback(async () => {
-    if (!user) { setJobs([]); setEverInterviewedJobIds(new Set()); setLoading(false); return; }
+    if (!user) {
+      setJobs([]);
+      setEverInterviewedJobIds(new Set());
+      setJobIdsWithDocuments(new Set());
+      setLoading(false);
+      return;
+    }
     try {
       setLoading(true);
       const { data, error } = await supabase
@@ -33,6 +42,14 @@ export function useJobs() {
         .eq('to_status', 'interviewing');
       if (!historyError) {
         setEverInterviewedJobIds(new Set((historyRows || []).map(r => r.job_id)));
+      }
+
+      const { data: docRows, error: docError } = await supabase
+        .from('job_documents')
+        .select('job_id')
+        .eq('user_id', user.id);
+      if (!docError) {
+        setJobIdsWithDocuments(new Set((docRows || []).map(r => r.job_id)));
       }
     } catch (err) {
       setError(err as Error);
@@ -57,6 +74,41 @@ export function useJobs() {
           } else if (payload.eventType === 'DELETE') {
             // Only use realtime for DELETE — do NOT also call setJobs manually in deleteJob
             setJobs(prev => prev.filter(job => job.id !== payload.old.id));
+          }
+        }
+      )
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [user]);
+
+  // Keeps jobIdsWithDocuments in sync when a document is uploaded/deleted from
+  // the detail sheet — otherwise the dashboard's Resume column would only
+  // reflect reality after a full refetch (e.g. a page reload).
+  useEffect(() => {
+    if (!user) return;
+    const channel = supabase
+      .channel('job-documents-realtime')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'job_documents', filter: `user_id=eq.${user.id}` },
+        (payload) => {
+          if (payload.eventType === 'INSERT') {
+            const jobId = (payload.new as { job_id: string }).job_id;
+            setJobIdsWithDocuments(prev => prev.has(jobId) ? prev : new Set(prev).add(jobId));
+          } else if (payload.eventType === 'DELETE') {
+            const jobId = (payload.old as { job_id: string }).job_id;
+            // Only clear the flag if that was the job's last remaining document.
+            supabase
+              .from('job_documents')
+              .select('id', { count: 'exact', head: true })
+              .eq('job_id', jobId)
+              .then(({ count }) => {
+                if (count) return;
+                setJobIdsWithDocuments(prev => {
+                  if (!prev.has(jobId)) return prev;
+                  const next = new Set(prev);
+                  next.delete(jobId);
+                  return next;
+                });
+              });
           }
         }
       )
@@ -169,5 +221,8 @@ export function useJobs() {
     return { success: true };
   };
 
-  return { jobs, loading, error, everInterviewedJobIds, createJob, updateJob, updateJobStatus, deleteJob, refetch: fetchJobs };
+  return {
+    jobs, loading, error, everInterviewedJobIds, jobIdsWithDocuments,
+    createJob, updateJob, updateJobStatus, deleteJob, refetch: fetchJobs,
+  };
 }

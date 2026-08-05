@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { csvSafe } from '@/pages/Insights';
+import { csvSafe } from '@/lib/csvSafe';
 
 describe('csvSafe', () => {
   it('leaves ordinary text untouched', () => {

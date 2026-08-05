@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Navbar } from '@/components/layout/Navbar';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
+import { callApi } from '@/lib/callApi';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -59,8 +60,8 @@ export default function Settings() {
     try {
       // Server-side deletion: removes Storage objects and the Auth user with
       // the service role, which cascades to jobs/notes/history/documents rows.
-      const { error } = await supabase.functions.invoke('delete-account');
-      if (error) throw error;
+      const result = await callApi('/api/delete-account', {});
+      if ('error' in result) throw new Error(result.error);
       await signOut();
       toast({ title: 'Account deleted successfully' });
       window.location.href = '/';
@@ -162,7 +163,7 @@ export default function Settings() {
                   <Input
                     id="new-password" type="password" placeholder="••••••••"
                     value={newPassword} onChange={(e) => setNewPassword(e.target.value)}
-                    minLength={8} required autoComplete="new-password"
+                    required autoComplete="new-password"
                   />
                 </div>
                 <div className="space-y-2">
@@ -170,7 +171,7 @@ export default function Settings() {
                   <Input
                     id="confirm-password" type="password" placeholder="••••••••"
                     value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)}
-                    minLength={8} required autoComplete="new-password"
+                    required autoComplete="new-password"
                   />
                 </div>
                 <Button type="submit" disabled={passwordLoading} className="gap-2">
