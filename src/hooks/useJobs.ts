@@ -81,6 +81,41 @@ export function useJobs() {
     return () => { supabase.removeChannel(channel); };
   }, [user]);
 
+  // Keeps jobIdsWithDocuments in sync when a document is uploaded/deleted from
+  // the detail sheet — otherwise the dashboard's Resume column would only
+  // reflect reality after a full refetch (e.g. a page reload).
+  useEffect(() => {
+    if (!user) return;
+    const channel = supabase
+      .channel('job-documents-realtime')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'job_documents', filter: `user_id=eq.${user.id}` },
+        (payload) => {
+          if (payload.eventType === 'INSERT') {
+            const jobId = (payload.new as { job_id: string }).job_id;
+            setJobIdsWithDocuments(prev => prev.has(jobId) ? prev : new Set(prev).add(jobId));
+          } else if (payload.eventType === 'DELETE') {
+            const jobId = (payload.old as { job_id: string }).job_id;
+            // Only clear the flag if that was the job's last remaining document.
+            supabase
+              .from('job_documents')
+              .select('id', { count: 'exact', head: true })
+              .eq('job_id', jobId)
+              .then(({ count }) => {
+                if (count) return;
+                setJobIdsWithDocuments(prev => {
+                  if (!prev.has(jobId)) return prev;
+                  const next = new Set(prev);
+                  next.delete(jobId);
+                  return next;
+                });
+              });
+          }
+        }
+      )
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [user]);
+
   const createJob = async (input: {
     company_name: string;
     job_title: string;
