@@ -8,22 +8,8 @@ const base = {
 };
 
 describe('jobSchema', () => {
-  it('treats an empty salary string as absent rather than coercing to 0', () => {
-    const result = jobSchema.safeParse({ ...base, salary_min: '', salary_max: '' });
-    expect(result.success).toBe(true);
-    if (result.success) {
-      expect(result.data.salary_min).toBeUndefined();
-      expect(result.data.salary_max).toBeUndefined();
-    }
-  });
-
-  it('rejects salary_max below salary_min', () => {
-    const result = jobSchema.safeParse({ ...base, salary_min: '100000', salary_max: '50000' });
-    expect(result.success).toBe(false);
-  });
-
-  it('accepts salary_max equal to or above salary_min', () => {
-    const result = jobSchema.safeParse({ ...base, salary_min: '50000', salary_max: '100000' });
+  it('accepts the minimal required fields', () => {
+    const result = jobSchema.safeParse(base);
     expect(result.success).toBe(true);
   });
 
@@ -35,5 +21,10 @@ describe('jobSchema', () => {
   it('accepts a valid https job URL', () => {
     const result = jobSchema.safeParse({ ...base, job_url: 'https://example.com/job/123' });
     expect(result.success).toBe(true);
+  });
+
+  it('requires company_name and job_title', () => {
+    expect(jobSchema.safeParse({ ...base, company_name: '' }).success).toBe(false);
+    expect(jobSchema.safeParse({ ...base, job_title: '' }).success).toBe(false);
   });
 });

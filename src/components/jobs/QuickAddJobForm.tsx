@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
   Plus, Command, Loader2, Upload, FileText, X,
-  Building2, Briefcase, Link2, DollarSign, Calendar,
+  Building2, Briefcase, Link2, Calendar,
   StickyNote, AlignLeft, ChevronDown, CheckCircle2, Sparkles, MapPin,
 } from 'lucide-react';
 import {
@@ -195,8 +195,6 @@ export function QuickAddJobForm({ trigger }: QuickAddJobFormProps) {
       job_url:         data.job_url || undefined,
       job_description: data.job_description || undefined,
       location:        data.location || undefined,
-      salary_min:      data.salary_min ?? undefined,
-      salary_max:      data.salary_max ?? undefined,
       applied_date:    data.applied_date || undefined,
       notes:           data.notes || undefined,
     });
@@ -279,21 +277,21 @@ export function QuickAddJobForm({ trigger }: QuickAddJobFormProps) {
       </DialogTrigger>
 
       <DialogContent
-        className="sm:max-w-[500px] p-0 gap-0 flex flex-col"
-        style={{ maxHeight: '85vh', height: 'auto', overflow: 'hidden' }}
+        className="sm:max-w-[600px] p-0 gap-0 flex flex-col"
+        style={{ maxHeight: '90vh', height: 'auto', overflow: 'hidden' }}
         aria-describedby={undefined}
       >
         {/* ── Fixed header ──────────────────────────────────────────────── */}
-        <DialogHeader className="px-6 pt-5 pb-4 border-b border-border/30 shrink-0">
-          <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-muted shrink-0">
-              <Briefcase className="h-4.5 w-4.5 text-muted-foreground" />
+        <DialogHeader className="px-7 pt-6 pb-5 border-b border-border/30 shrink-0">
+          <div className="flex items-center gap-3.5">
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 shrink-0">
+              <Briefcase className="h-5 w-5 text-primary" />
             </div>
             <div>
-              <DialogTitle className="text-sm font-semibold text-foreground leading-tight">
-                Add New Job
+              <DialogTitle className="text-lg font-bold text-foreground leading-tight">
+                Add New Application
               </DialogTitle>
-              <p className="text-xs text-muted-foreground mt-0.5">Track a new application</p>
+              <p className="text-sm text-muted-foreground mt-0.5">Track a new job application</p>
             </div>
           </div>
         </DialogHeader>
@@ -302,7 +300,7 @@ export function QuickAddJobForm({ trigger }: QuickAddJobFormProps) {
         <div
           ref={formBodyRef}
           className="flex-1 overflow-y-auto overscroll-contain"
-          style={{ minHeight: 0, maxHeight: 'calc(85vh - 140px)' }}
+          style={{ minHeight: 0, maxHeight: 'calc(90vh - 152px)' }}
         >
           <form id="add-job-form" onSubmit={handleSubmit(onSubmit)} noValidate>
             <div className="px-6 py-5 space-y-5">
@@ -328,13 +326,17 @@ export function QuickAddJobForm({ trigger }: QuickAddJobFormProps) {
                     size="sm"
                     onClick={handleAutoFill}
                     disabled={extracting || !extractUrl.trim()}
-                    className="shrink-0"
+                    className="shrink-0 min-w-[136px]"
                   >
-                    {extracting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : 'Auto-fill details'}
+                    {extracting
+                      ? <><Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" /> Reading posting…</>
+                      : 'Auto-fill details'}
                   </Button>
                 </div>
                 <p className="text-[11px] text-muted-foreground/70">
-                  Review the extracted information before saving.
+                  {extracting
+                    ? 'Fetching the job page and asking Groq to extract details — usually a few seconds.'
+                    : 'Review the extracted information before saving.'}
                 </p>
               </div>
 
@@ -555,39 +557,6 @@ export function QuickAddJobForm({ trigger }: QuickAddJobFormProps) {
                       <FieldError message={errors.job_url?.message} />
                     </div>
 
-                    {/* Salary */}
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className="space-y-1.5">
-                        <Label htmlFor="salary_min" className="flex items-center gap-1.5 text-xs text-foreground/70">
-                          <DollarSign className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-                          Salary Min
-                        </Label>
-                        <Input
-                          id="salary_min"
-                          type="number"
-                          min="0"
-                          placeholder="80,000"
-                          {...register('salary_min')}
-                          className="bg-muted/20 border-border/40 focus-visible:ring-1 text-sm"
-                        />
-                      </div>
-                      <div className="space-y-1.5">
-                        <Label htmlFor="salary_max" className="flex items-center gap-1.5 text-xs text-foreground/70">
-                          <DollarSign className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-                          Salary Max
-                        </Label>
-                        <Input
-                          id="salary_max"
-                          type="number"
-                          min="0"
-                          placeholder="120,000"
-                          {...register('salary_max')}
-                          className="bg-muted/20 border-border/40 focus-visible:ring-1 text-sm"
-                        />
-                        <FieldError message={errors.salary_max?.message} />
-                      </div>
-                    </div>
-
                     {/* Applied Date */}
                     <div className="space-y-1.5">
                       <Label htmlFor="applied_date" className="flex items-center gap-1.5 text-xs text-foreground/70">
@@ -627,11 +596,10 @@ export function QuickAddJobForm({ trigger }: QuickAddJobFormProps) {
         </div>
 
         {/* ── Fixed footer ──────────────────────────────────────────────── */}
-        <div className="px-6 py-4 border-t border-border/30 flex justify-end gap-2 shrink-0 bg-card/95 backdrop-blur-sm">
+        <div className="px-7 py-4 border-t border-border/30 flex justify-end gap-2 shrink-0 bg-card/95 backdrop-blur-sm">
           <Button
             type="button"
             variant="ghost"
-            size="sm"
             className="text-muted-foreground hover:text-foreground"
             onClick={handleClose}
             disabled={submitting}
@@ -641,9 +609,8 @@ export function QuickAddJobForm({ trigger }: QuickAddJobFormProps) {
           <Button
             type="submit"
             form="add-job-form"
-            size="sm"
             disabled={submitting}
-            className="min-w-[90px]"
+            className="min-w-[130px] font-semibold"
           >
             {submitting ? (
               <>
@@ -651,7 +618,7 @@ export function QuickAddJobForm({ trigger }: QuickAddJobFormProps) {
                 Saving…
               </>
             ) : (
-              'Save Job'
+              'Save Application'
             )}
           </Button>
         </div>
@@ -662,10 +629,14 @@ export function QuickAddJobForm({ trigger }: QuickAddJobFormProps) {
 
 const DefaultTrigger = React.forwardRef<HTMLButtonElement, React.ComponentPropsWithoutRef<typeof Button>>(
   (props, ref) => (
-    <Button ref={ref} className="gap-2" {...props}>
-      <Plus className="h-4 w-4" />
-      Add Job
-      <kbd className="pointer-events-none hidden h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-xs font-medium opacity-100 sm:flex">
+    <Button
+      ref={ref}
+      className="gap-2 h-11 px-5 text-[15px] font-bold rounded-xl bg-emerald-500 text-emerald-950 shadow-md shadow-emerald-500/25 hover:bg-emerald-400 transition-colors duration-200"
+      {...props}
+    >
+      <Plus className="h-5 w-5" strokeWidth={2.5} />
+      Add Application
+      <kbd className="pointer-events-none hidden h-5 select-none items-center gap-1 rounded border border-emerald-950/20 bg-emerald-950/10 px-1.5 font-mono text-xs font-semibold opacity-100 sm:flex">
         <Command className="h-3 w-3" />K
       </kbd>
     </Button>
