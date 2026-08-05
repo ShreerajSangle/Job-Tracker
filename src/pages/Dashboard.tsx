@@ -41,24 +41,14 @@ import {
 type SortField = 'date' | 'company' | 'title' | 'status';
 type SortDir   = 'asc' | 'desc';
 
-const STATUS_COLORS: Record<JobStatus, string> = {
-  saved:        'bg-indigo-500/15 text-indigo-400 border-indigo-500/30',
-  applied:      'bg-sky-500/15 text-sky-400 border-sky-500/30',
-  interviewing: 'bg-amber-500/15 text-amber-400 border-amber-500/30',
-  offered:      'bg-emerald-500/15 text-emerald-400 border-emerald-500/30',
-  accepted:     'bg-green-500/15 text-green-400 border-green-500/30',
-  rejected:     'bg-rose-500/15 text-rose-400 border-rose-500/30',
-  withdrawn:    'bg-slate-500/15 text-slate-400 border-slate-500/30',
-};
-
 function StatPill({ label, value, icon: Icon, colorClass }: {
   label: string; value: number; icon: React.ElementType; colorClass: string;
 }) {
   return (
-    <div className="glass flex items-center gap-2.5 rounded-xl px-3.5 py-3 min-w-0 transition-transform duration-200 hover:-translate-y-0.5">
-      <Icon className={`h-4 w-4 shrink-0 ${colorClass}`} />
-      <span className="text-[clamp(1.125rem,2.5vw,1.375rem)] font-semibold tabular-nums text-foreground leading-none">{value}</span>
-      <span className="text-[11px] font-medium text-muted-foreground/80 uppercase tracking-wider truncate">{label}</span>
+    <div className="glass flex items-center gap-3 rounded-xl px-4 py-3.5 min-w-0 transition-transform duration-200 hover:-translate-y-0.5">
+      <Icon className={`h-5 w-5 shrink-0 ${colorClass}`} />
+      <span className="text-[clamp(1.5rem,3.2vw,2rem)] font-bold tabular-nums text-foreground leading-none">{value}</span>
+      <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider truncate">{label}</span>
     </div>
   );
 }
@@ -82,16 +72,16 @@ function StatusBadge({ status, jobId, onChangeStatus }: {
   jobId: string;
   onChangeStatus: (id: string, s: JobStatus) => void;
 }) {
+  const config = STATUS_CONFIG[status];
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <button
-          className={`inline-flex items-center px-2 py-0.5 rounded-full border text-[11px] font-medium transition-opacity duration-200 hover:opacity-80 ${
-            STATUS_COLORS[status]
-          }`}
+          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-[11px] font-semibold transition-opacity duration-200 hover:opacity-90 ${config.bgColor} ${config.color} ${config.borderColor}`}
           onClick={(e) => e.stopPropagation()}
         >
-          {STATUS_CONFIG[status]?.label ?? status}
+          <span className="h-1.5 w-1.5 rounded-full bg-white/80 shrink-0" />
+          {config.label}
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" onClick={(e) => e.stopPropagation()}>
@@ -101,9 +91,7 @@ function StatusBadge({ status, jobId, onChangeStatus }: {
             className={`text-xs ${key === status ? 'font-semibold' : ''}`}
             onClick={() => onChangeStatus(jobId, key)}
           >
-            <span className={`mr-2 h-2 w-2 rounded-full inline-block ${
-              STATUS_COLORS[key].split(' ')[0]
-            }`} />
+            <span className={`mr-2 h-2 w-2 rounded-full inline-block ${cfg.bgColor}`} />
             {cfg.label}
           </DropdownMenuItem>
         ))}

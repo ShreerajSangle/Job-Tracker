@@ -63,13 +63,13 @@ export const STATUS_CONFIG: Record<JobStatus, {
   borderColor: string;
   icon: string;
 }> = {
-  saved:        { label: 'Saved',        color: 'text-[hsl(220,10%,65%)]',  bgColor: 'bg-[hsl(220,10%,15%)]',  borderColor: 'border-[hsl(220,10%,20%)]',  icon: 'saved' },
-  applied:      { label: 'Applied',      color: 'text-[hsl(215,55%,65%)]',  bgColor: 'bg-[hsl(215,40%,15%)]',  borderColor: 'border-[hsl(215,35%,22%)]',  icon: 'applied' },
-  interviewing: { label: 'Interviewing', color: 'text-[hsl(260,45%,70%)]',  bgColor: 'bg-[hsl(260,30%,15%)]',  borderColor: 'border-[hsl(260,25%,22%)]',  icon: 'interviewing' },
-  offered:      { label: 'Offered',      color: 'text-[hsl(152,40%,60%)]',  bgColor: 'bg-[hsl(152,25%,13%)]',  borderColor: 'border-[hsl(152,25%,20%)]',  icon: 'offered' },
-  accepted:     { label: 'Accepted',     color: 'text-[hsl(152,50%,58%)]',  bgColor: 'bg-[hsl(152,30%,13%)]',  borderColor: 'border-[hsl(152,30%,20%)]',  icon: 'accepted' },
-  rejected:     { label: 'Rejected',     color: 'text-[hsl(0,45%,62%)]',    bgColor: 'bg-[hsl(0,30%,14%)]',    borderColor: 'border-[hsl(0,25%,20%)]',    icon: 'rejected' },
-  withdrawn:    { label: 'Withdrawn',    color: 'text-[hsl(220,10%,55%)]',  bgColor: 'bg-[hsl(220,8%,14%)]',   borderColor: 'border-[hsl(220,8%,20%)]',   icon: 'withdrawn' },
+  saved:        { label: 'Saved',        color: 'text-white', bgColor: 'bg-[hsl(var(--status-saved))]',        borderColor: 'border-transparent', icon: 'saved' },
+  applied:      { label: 'Applied',      color: 'text-white', bgColor: 'bg-[hsl(var(--status-applied))]',      borderColor: 'border-transparent', icon: 'applied' },
+  interviewing: { label: 'Interviewing', color: 'text-white', bgColor: 'bg-[hsl(var(--status-interviewing))]', borderColor: 'border-transparent', icon: 'interviewing' },
+  offered:      { label: 'Offered',      color: 'text-white', bgColor: 'bg-[hsl(var(--status-offered))]',      borderColor: 'border-transparent', icon: 'offered' },
+  accepted:     { label: 'Accepted',     color: 'text-white', bgColor: 'bg-[hsl(var(--status-accepted))]',     borderColor: 'border-transparent', icon: 'accepted' },
+  rejected:     { label: 'Rejected',     color: 'text-white', bgColor: 'bg-[hsl(var(--status-rejected))]',     borderColor: 'border-transparent', icon: 'rejected' },
+  withdrawn:    { label: 'Withdrawn',    color: 'text-white', bgColor: 'bg-[hsl(var(--status-withdrawn))]',    borderColor: 'border-transparent', icon: 'withdrawn' },
 };
 
 export const SOURCE_CONFIG: Record<JobSource, {
@@ -77,11 +77,11 @@ export const SOURCE_CONFIG: Record<JobSource, {
   color: string;
   bgColor: string;
 }> = {
-  linkedin:     { label: 'LinkedIn',     color: 'text-[hsl(201,50%,58%)]', bgColor: 'bg-[hsl(201,30%,14%)]' },
-  indeed:       { label: 'Indeed',       color: 'text-[hsl(234,40%,65%)]', bgColor: 'bg-[hsl(234,25%,14%)]' },
-  referral:     { label: 'Referral',     color: 'text-[hsl(152,40%,58%)]', bgColor: 'bg-[hsl(152,25%,13%)]' },
-  company_site: { label: 'Company Site', color: 'text-[hsl(260,40%,65%)]', bgColor: 'bg-[hsl(260,25%,14%)]' },
-  recruiter:    { label: 'Recruiter',    color: 'text-[hsl(38,45%,58%)]',  bgColor: 'bg-[hsl(38,25%,14%)]' },
+  linkedin:     { label: 'LinkedIn',     color: 'text-[hsl(201,70%,68%)]', bgColor: 'bg-[hsl(201,45%,20%)]' },
+  indeed:       { label: 'Indeed',       color: 'text-[hsl(234,60%,75%)]', bgColor: 'bg-[hsl(234,40%,20%)]' },
+  referral:     { label: 'Referral',     color: 'text-[hsl(152,55%,65%)]', bgColor: 'bg-[hsl(152,40%,18%)]' },
+  company_site: { label: 'Company Site', color: 'text-[hsl(260,60%,75%)]', bgColor: 'bg-[hsl(260,40%,20%)]' },
+  recruiter:    { label: 'Recruiter',    color: 'text-[hsl(38,70%,65%)]',  bgColor: 'bg-[hsl(38,45%,18%)]' },
   other:        { label: 'Other',        color: 'text-muted-foreground',    bgColor: 'bg-muted' },
 };
 

@@ -9,50 +9,50 @@
      DARK MODE (default — app is dark-first)
   ───────────────────────────────────────────────────────── */
   :root {
-    /* Calm dark theme — off-black + muted blue accents */
+    /* Bright dark theme — off-black + vivid blue accents, high-contrast text */
     --background: 228 14% 7%;
-    --foreground: 220 13% 83%;
+    --foreground: 220 20% 93%;
     --card: 228 13% 10%;
-    --card-foreground: 220 13% 83%;
+    --card-foreground: 220 20% 93%;
     --popover: 228 13% 10%;
-    --popover-foreground: 220 13% 83%;
-    --primary: 220 55% 55%;
-    --primary-foreground: 220 20% 96%;
+    --popover-foreground: 220 20% 93%;
+    --primary: 217 75% 58%;
+    --primary-foreground: 220 20% 98%;
     --secondary: 225 12% 15%;
-    --secondary-foreground: 220 13% 75%;
+    --secondary-foreground: 220 15% 85%;
     --muted: 225 12% 14%;
-    --muted-foreground: 220 10% 48%;
+    --muted-foreground: 220 12% 62%;
     --accent: 225 12% 16%;
-    --accent-foreground: 220 13% 83%;
+    --accent-foreground: 220 20% 93%;
     --destructive: 0 50% 48%;
     --destructive-foreground: 0 0% 95%;
-    --border: 225 10% 16%;
-    --input: 225 10% 16%;
-    --ring: 220 55% 55%;
+    --border: 225 10% 18%;
+    --input: 225 10% 18%;
+    --ring: 217 75% 58%;
     --radius: 0.75rem;
-    /* Status colors */
-    --status-saved: 220 10% 48%;
-    --status-applied: 215 50% 52%;
-    --status-interviewing: 260 40% 55%;
-    --status-offered: 152 40% 42%;
-    --status-accepted: 152 45% 48%;
-    --status-rejected: 0 45% 52%;
+    /* Status colors — solid, vivid fills (used with white text) */
+    --status-saved: 220 10% 45%;
+    --status-applied: 217 80% 58%;
+    --status-interviewing: 38 92% 55%;
+    --status-offered: 152 60% 42%;
+    --status-accepted: 152 65% 38%;
+    --status-rejected: 0 72% 58%;
     --status-withdrawn: 220 10% 40%;
     /* Source colors */
-    --source-linkedin: 201 55% 42%;
-    --source-indeed: 234 45% 48%;
-    --source-referral: 152 40% 42%;
-    --source-company: 260 40% 50%;
-    --source-recruiter: 38 50% 50%;
+    --source-linkedin: 201 65% 50%;
+    --source-indeed: 234 55% 56%;
+    --source-referral: 152 50% 45%;
+    --source-company: 260 50% 58%;
+    --source-recruiter: 38 60% 55%;
     /* Sidebar */
     --sidebar-background: 228 13% 10%;
-    --sidebar-foreground: 220 13% 83%;
-    --sidebar-primary: 220 55% 55%;
-    --sidebar-primary-foreground: 220 20% 96%;
+    --sidebar-foreground: 220 20% 93%;
+    --sidebar-primary: 217 75% 58%;
+    --sidebar-primary-foreground: 220 20% 98%;
     --sidebar-accent: 225 12% 16%;
-    --sidebar-accent-foreground: 220 13% 83%;
-    --sidebar-border: 225 10% 16%;
-    --sidebar-ring: 220 55% 55%;
+    --sidebar-accent-foreground: 220 20% 93%;
+    --sidebar-border: 225 10% 18%;
+    --sidebar-ring: 217 75% 58%;
   }
 
   /* ─────────────────────────────────────────────────────────
@@ -60,41 +60,41 @@
   ───────────────────────────────────────────────────────── */
   html:not(.dark) {
     --background: 220 20% 97%;
-    --foreground: 222 25% 15%;
+    --foreground: 222 30% 12%;
     --card: 0 0% 100%;
-    --card-foreground: 222 25% 15%;
+    --card-foreground: 222 30% 12%;
     --popover: 0 0% 100%;
-    --popover-foreground: 222 25% 15%;
-    --primary: 220 60% 45%;
+    --popover-foreground: 222 30% 12%;
+    --primary: 217 80% 48%;
     --primary-foreground: 0 0% 100%;
     --secondary: 220 14% 92%;
-    --secondary-foreground: 222 20% 25%;
+    --secondary-foreground: 222 25% 20%;
     --muted: 220 14% 93%;
-    --muted-foreground: 220 10% 45%;
+    --muted-foreground: 220 12% 40%;
     --accent: 220 14% 91%;
-    --accent-foreground: 222 25% 15%;
-    --destructive: 0 65% 48%;
+    --accent-foreground: 222 30% 12%;
+    --destructive: 0 70% 45%;
     --destructive-foreground: 0 0% 100%;
     --border: 220 13% 88%;
     --input: 220 13% 88%;
-    --ring: 220 60% 45%;
-    /* Status colors — slightly more saturated for light bg */
-    --status-saved: 220 12% 52%;
-    --status-applied: 215 55% 46%;
-    --status-interviewing: 260 45% 50%;
-    --status-offered: 152 45% 38%;
-    --status-accepted: 152 50% 42%;
-    --status-rejected: 0 50% 48%;
-    --status-withdrawn: 220 12% 44%;
+    --ring: 217 80% 48%;
+    /* Status colors — solid, vivid fills (used with white text) */
+    --status-saved: 220 12% 48%;
+    --status-applied: 217 85% 50%;
+    --status-interviewing: 32 90% 48%;
+    --status-offered: 152 65% 34%;
+    --status-accepted: 152 70% 30%;
+    --status-rejected: 0 75% 50%;
+    --status-withdrawn: 220 12% 42%;
     /* Sidebar */
     --sidebar-background: 0 0% 100%;
-    --sidebar-foreground: 222 25% 15%;
-    --sidebar-primary: 220 60% 45%;
+    --sidebar-foreground: 222 30% 12%;
+    --sidebar-primary: 217 80% 48%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 220 14% 91%;
-    --sidebar-accent-foreground: 222 25% 15%;
+    --sidebar-accent-foreground: 222 30% 12%;
     --sidebar-border: 220 13% 88%;
-    --sidebar-ring: 220 60% 45%;
+    --sidebar-ring: 217 80% 48%;
   }
 }
 

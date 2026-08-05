@@ -25,9 +25,10 @@ export function StatusBadge({ status, onStatusChange, interactive = false, size 
 
   const badgeContent = (
     <>
+      <span className="h-1.5 w-1.5 rounded-full bg-white/80 shrink-0" />
       {config.label}
       {interactive && (
-        <ChevronDown className="ml-1.5 h-3 w-3 opacity-60" />
+        <ChevronDown className="ml-0.5 h-3 w-3 opacity-70" />
       )}
     </>
   );
@@ -37,11 +38,12 @@ export function StatusBadge({ status, onStatusChange, interactive = false, size 
       <Badge
         className={`
           ${config.bgColor} ${config.color} ${config.borderColor}
-          border font-medium
+          border font-semibold gap-1.5
           ${size === 'sm' ? 'text-[10px] px-2 py-0' : 'text-xs px-2.5 py-0.5'}
         `}
         variant="outline"
       >
+        <span className="h-1.5 w-1.5 rounded-full bg-white/80 shrink-0" />
         {config.label}
       </Badge>
     );
@@ -50,13 +52,13 @@ export function StatusBadge({ status, onStatusChange, interactive = false, size 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <button 
+        <button
           className={`
-            inline-flex items-center rounded-full border transition-all duration-200
+            inline-flex items-center gap-1.5 rounded-full border transition-all duration-200
             focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1
-            hover:opacity-80 active:scale-95
+            hover:opacity-90 active:scale-95
             ${config.bgColor} ${config.color} ${config.borderColor}
-            ${size === 'sm' ? 'text-[10px] px-2 py-0' : 'text-xs px-2.5 py-0.5 font-medium'}
+            ${size === 'sm' ? 'text-[10px] px-2 py-0' : 'text-xs px-2.5 py-0.5 font-semibold'}
           `}
         >
           {badgeContent}
