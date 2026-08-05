@@ -39,8 +39,8 @@ export default function Settings() {
     if (newPassword !== confirmPassword) {
       toast({ title: 'Passwords do not match', variant: 'destructive' }); return;
     }
-    if (newPassword.length < 6) {
-      toast({ title: 'Password must be at least 6 characters', variant: 'destructive' }); return;
+    if (newPassword.length < 8) {
+      toast({ title: 'Password must be at least 8 characters', variant: 'destructive' }); return;
     }
     setPasswordLoading(true);
     const { error } = await supabase.auth.updateUser({ password: newPassword });
@@ -57,24 +57,19 @@ export default function Settings() {
   const handleDeleteAccount = async () => {
     setDeleteLoading(true);
     try {
-      // Delete all user data first (RLS cascade handles notes/history)
-      await supabase.from('jobs').delete().eq('user_id', user!.id);
-      const { error } = await supabase.rpc('delete_user' as never);
-      if (error) {
-        // No delete_user RPC: sign out and inform user
-        await signOut();
-        toast({
-          title: 'Job data deleted',
-          description: 'Your job data has been removed. Contact support to fully delete your auth account.',
-        });
-        window.location.href = '/';
-        return;
-      }
+      // Server-side deletion: removes Storage objects and the Auth user with
+      // the service role, which cascades to jobs/notes/history/documents rows.
+      const { error } = await supabase.functions.invoke('delete-account');
+      if (error) throw error;
       await signOut();
       toast({ title: 'Account deleted successfully' });
       window.location.href = '/';
-    } catch {
-      toast({ title: 'Error deleting account', variant: 'destructive' });
+    } catch (err) {
+      toast({
+        title: 'Error deleting account',
+        description: (err as Error).message,
+        variant: 'destructive',
+      });
     } finally {
       setDeleteLoading(false);
       setShowDeleteDialog(false);
@@ -167,7 +162,7 @@ export default function Settings() {
                   <Input
                     id="new-password" type="password" placeholder="••••••••"
                     value={newPassword} onChange={(e) => setNewPassword(e.target.value)}
-                    minLength={6} required autoComplete="new-password"
+                    minLength={8} required autoComplete="new-password"
                   />
                 </div>
                 <div className="space-y-2">
@@ -175,7 +170,7 @@ export default function Settings() {
                   <Input
                     id="confirm-password" type="password" placeholder="••••••••"
                     value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)}
-                    minLength={6} required autoComplete="new-password"
+                    minLength={8} required autoComplete="new-password"
                   />
                 </div>
                 <Button type="submit" disabled={passwordLoading} className="gap-2">

@@ -58,9 +58,11 @@ export function NotesTimeline({ jobId }: NotesTimelineProps) {
     e.preventDefault();
     if (!content.trim()) return;
     setSubmitting(true);
-    await createNote(content.trim(), category);
-    setContent('');
-    setCategory('general');
+    const result = await createNote(content.trim(), category);
+    if (!result.error) {
+      setContent('');
+      setCategory('general');
+    }
     setSubmitting(false);
   };
 

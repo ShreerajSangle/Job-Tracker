@@ -8,6 +8,13 @@ import { Loader2, TrendingUp, Target, Clock, Download, Zap, Calendar } from 'luc
 import { STATUS_CONFIG } from '@/types/job';
 import { Button } from '@/components/ui/button';
 
+// Neutralizes CSV/spreadsheet formula injection: a cell whose text starts
+// with =, +, -, or @ can be interpreted as a formula by Excel/Sheets when
+// opened. Prefixing with an apostrophe forces it to be read as plain text.
+export function csvSafe(value: string): string {
+  return /^[=+\-@]/.test(value) ? `'${value}` : value;
+}
+
 function exportToCSV(jobs: ReturnType<typeof useJobsContext>['jobs']) {
   const headers = [
     'Company', 'Job Title', 'Status', 'Source', 'Location',
@@ -15,19 +22,19 @@ function exportToCSV(jobs: ReturnType<typeof useJobsContext>['jobs']) {
     'Deadline', 'Job URL', 'Tags', 'Notes', 'Created At'
   ];
   const rows = jobs.map(j => [
-    `"${(j.company_name || '').replace(/"/g, '""')}"`,
-    `"${(j.job_title || '').replace(/"/g, '""')}"`,
+    `"${csvSafe(j.company_name || '').replace(/"/g, '""')}"`,
+    `"${csvSafe(j.job_title || '').replace(/"/g, '""')}"`,
     j.status,
     j.source || '',
-    `"${(j.location || '').replace(/"/g, '""')}"`,
+    `"${csvSafe(j.location || '').replace(/"/g, '""')}"`,
     j.salary_min ?? '',
     j.salary_max ?? '',
     j.currency || '',
     j.applied_date || '',
     j.deadline_date || '',
-    `"${(j.job_url || '').replace(/"/g, '""')}"`,
-    `"${(j.tags || []).join(', ')}"`,
-    `"${(j.notes || '').replace(/"/g, '""').replace(/\n/g, ' ')}"`,
+    `"${csvSafe(j.job_url || '').replace(/"/g, '""')}"`,
+    `"${csvSafe((j.tags || []).join(', '))}"`,
+    `"${csvSafe((j.notes || '').replace(/\n/g, ' ')).replace(/"/g, '""')}"`,
     j.created_at,
   ]);
   const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
@@ -39,8 +46,8 @@ function exportToCSV(jobs: ReturnType<typeof useJobsContext>['jobs']) {
 }
 
 export default function Insights() {
-  const { jobs, loading } = useJobsContext();
-  const stats = useJobStats(jobs);
+  const { jobs, loading, everInterviewedJobIds } = useJobsContext();
+  const stats = useJobStats(jobs, everInterviewedJobIds);
 
   if (loading) {
     return (

@@ -17,6 +17,18 @@ function isBucketNotFound(err: unknown): boolean {
   );
 }
 
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
+const ALLOWED_MIME_TYPES = [
+  'application/pdf',
+  'application/msword',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+];
+
+function extensionFor(fileName: string): string {
+  const match = /\.[a-zA-Z0-9]+$/.exec(fileName);
+  return match ? match[0] : '';
+}
+
 export function useJobDocuments(jobId: string) {
   const { user } = useAuth();
   const [documents, setDocuments] = useState<JobDocument[]>([]);
@@ -26,7 +38,7 @@ export function useJobDocuments(jobId: string) {
   const [bucketMissing, setBucketMissing] = useState(false);
 
   const fetchDocuments = useCallback(async () => {
-    if (!user || !jobId) return;
+    if (!user || !jobId) { setDocuments([]); setLoading(false); return; }
 
     try {
       setLoading(true);
@@ -57,9 +69,23 @@ export function useJobDocuments(jobId: string) {
   const uploadDocument = async (file: File, documentType: DocumentType = 'resume') => {
     if (!user) return { error: new Error('Not authenticated') };
 
+    if (!ALLOWED_MIME_TYPES.includes(file.type)) {
+      const error = new Error('Only PDF or DOCX files are accepted');
+      toast({ title: 'Invalid file type', description: error.message, variant: 'destructive' });
+      return { error };
+    }
+    if (file.size > MAX_FILE_SIZE) {
+      const error = new Error('File must be under 5 MB');
+      toast({ title: 'File too large', description: error.message, variant: 'destructive' });
+      return { error };
+    }
+
     try {
       setUploading(true);
-      const filePath = `${user.id}/${jobId}/${Date.now()}_${file.name}`;
+      // Random storage key — never embed the user-controlled file name in the
+      // object path (path traversal / collision risk). The original name is
+      // kept only in the file_name metadata column for display.
+      const filePath = `${user.id}/${jobId}/${crypto.randomUUID()}${extensionFor(file.name)}`;
 
       const { error: uploadError } = await supabase.storage
         .from('job-documents')
@@ -94,7 +120,12 @@ export function useJobDocuments(jobId: string) {
         .select()
         .single();
 
-      if (insertError) throw insertError;
+      if (insertError) {
+        // Compensate: the metadata row failed, so remove the now-orphaned
+        // Storage object instead of leaving it stranded.
+        await supabase.storage.from('job-documents').remove([filePath]);
+        throw insertError;
+      }
 
       toast({ title: 'File uploaded!' });
       await fetchDocuments();
@@ -138,7 +169,10 @@ export function useJobDocuments(jobId: string) {
     if (!user) return;
 
     try {
-      await supabase.storage.from('job-documents').remove([doc.file_path]);
+      const { error: storageError } = await supabase.storage
+        .from('job-documents')
+        .remove([doc.file_path]);
+      if (storageError) throw storageError;
 
       const { error } = await supabase
         .from('job_documents')

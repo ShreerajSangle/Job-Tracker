@@ -10,7 +10,7 @@ export function useJobNotes(jobId: string) {
   const [loading, setLoading] = useState(true);
 
   const fetchNotes = useCallback(async () => {
-    if (!user || !jobId) return;
+    if (!user || !jobId) { setNotes([]); setLoading(false); return; }
 
     try {
       setLoading(true);

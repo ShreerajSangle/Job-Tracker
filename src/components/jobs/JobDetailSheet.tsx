@@ -75,8 +75,7 @@ export function JobDetailSheet({
   const [lastJobId, setLastJobId] = useState<string | null>(null);
   if (job && job.id !== lastJobId) {
     setLastJobId(job.id);
-    // Use notes as the editable description field (job_description column does not exist in schema)
-    setDescription(job.notes || '');
+    setDescription(job.job_description || '');
     setDescriptionDirty(false);
     setShowHistory(false);
   }
@@ -107,21 +106,17 @@ export function JobDetailSheet({
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
-  /**
-   * Saves description into the `notes` column (the `job_description` column
-   * does not exist in the Supabase schema — using notes as the backing field).
-   */
   const handleSaveDescription = async () => {
     setSavingDescription(true);
     const { error } = await supabase
       .from('jobs')
-      .update({ notes: description })
+      .update({ job_description: description })
       .eq('id', job.id);
 
     if (error) {
-      toast({ title: 'Error saving notes', description: error.message, variant: 'destructive' });
+      toast({ title: 'Error saving description', description: error.message, variant: 'destructive' });
     } else {
-      toast({ title: 'Notes saved' });
+      toast({ title: 'Description saved' });
       setDescriptionDirty(false);
     }
     setSavingDescription(false);
@@ -377,7 +372,7 @@ export function JobDetailSheet({
             <section className="space-y-2.5">
               <div className="flex items-center justify-between">
                 <Label className="text-xs uppercase tracking-wider text-muted-foreground/70 font-medium">
-                  Notes &amp; Description
+                  Job Description
                 </Label>
                 {descriptionDirty && (
                   <Button

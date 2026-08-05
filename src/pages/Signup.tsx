@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { Eye, EyeOff, Loader2, ArrowRight, Mail, RotateCcw } from 'lucide-react';
 
@@ -43,8 +44,8 @@ export default function SignupPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (password.length < 6) {
-      toast({ title: 'Password too short', description: 'Use at least 6 characters.', variant: 'destructive' });
+    if (password.length < 8) {
+      toast({ title: 'Password too short', description: 'Use at least 8 characters.', variant: 'destructive' });
       return;
     }
     setLoading(true);
@@ -59,7 +60,7 @@ export default function SignupPage() {
 
   const handleResend = async () => {
     if (resendCooldown > 0) return;
-    const { error } = await signUp(email, password);
+    const { error } = await supabase.auth.resend({ type: 'signup', email });
     if (error) {
       toast({ title: 'Could not resend', description: error.message, variant: 'destructive' });
     } else {
@@ -242,10 +243,10 @@ export default function SignupPage() {
                     type={showPw ? 'text' : 'password'}
                     autoComplete="new-password"
                     required
-                    minLength={6}
+                    minLength={8}
                     value={password}
                     onChange={e => setPassword(e.target.value)}
-                    placeholder="Min. 6 characters"
+                    placeholder="Min. 8 characters"
                     className="w-full h-11 rounded-lg border border-[hsl(225,10%,18%)] bg-[hsl(228,13%,10%)] px-3.5 pr-10 text-sm text-[hsl(220,13%,83%)] placeholder:text-[hsl(220,10%,32%)] outline-none transition-all focus:border-[hsl(220,55%,55%)] focus:ring-2 focus:ring-[hsl(220,55%,55%)]/20"
                   />
                   <button

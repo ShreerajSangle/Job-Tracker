@@ -51,7 +51,9 @@ const App = () => (
               path="/settings"
               element={
                 <ProtectedRoute>
-                  <Settings />
+                  <JobsProvider>
+                    <Settings />
+                  </JobsProvider>
                 </ProtectedRoute>
               }
             />

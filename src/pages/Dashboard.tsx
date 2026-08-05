@@ -68,7 +68,7 @@ function UrgencyDot({ deadline }: { deadline?: string | null }) {
   if (daysLeft > 7) return null;
   return (
     <span
-      title={`Deadline in ${daysLeft}d`}
+      title={daysLeft < 0 ? `Deadline overdue by ${Math.abs(daysLeft)}d` : `Deadline in ${daysLeft}d`}
       className={`inline-block h-2 w-2 rounded-full shrink-0 ${
         daysLeft <= 2 ? 'bg-rose-500' : 'bg-amber-500'
       } animate-pulse`}
@@ -317,8 +317,8 @@ function SortIcon({ field, active, dir }: { field: SortField; active: SortField;
 
 // ─── Main Dashboard ────────────────────────────────────────────────────────
 export default function Dashboard() {
-  const { jobs, loading, error, updateJobStatus, deleteJob } = useJobsContext();
-  const stats = useJobStats(jobs);
+  const { jobs, loading, error, everInterviewedJobIds, updateJobStatus, deleteJob } = useJobsContext();
+  const stats = useJobStats(jobs, everInterviewedJobIds);
 
   const [searchTerm,   setSearchTerm]   = useState('');
   const [sourceFilter, setSourceFilter] = useState<JobSource | 'all'>('all');
@@ -404,6 +404,10 @@ export default function Dashboard() {
   const handleChangeStatus = useCallback(async (id: string, s: JobStatus) => {
     await updateJobStatus(id, s);
   }, [updateJobStatus]);
+
+  const handleDeleteFromSheet = useCallback(async (id: string) => {
+    await deleteJob(id);
+  }, [deleteJob]);
 
   // ── Loading ────────────────────────────────────────────────────────────
   if (loading) return (
@@ -645,6 +649,8 @@ export default function Dashboard() {
           job={selectedJob}
           open={!!selectedJobId}
           onOpenChange={open => { if (!open) setSelectedJobId(null); }}
+          onStatusChange={handleChangeStatus}
+          onDelete={handleDeleteFromSheet}
         />
       )}
 

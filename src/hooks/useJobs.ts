@@ -9,9 +9,12 @@ export function useJobs() {
   const [jobs, setJobs]       = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError]     = useState<Error | null>(null);
+  // Job IDs that reached "interviewing" at any point, even if later rejected —
+  // current `status` alone under-counts the interview funnel for such jobs.
+  const [everInterviewedJobIds, setEverInterviewedJobIds] = useState<Set<string>>(new Set());
 
   const fetchJobs = useCallback(async () => {
-    if (!user) { setJobs([]); setLoading(false); return; }
+    if (!user) { setJobs([]); setEverInterviewedJobIds(new Set()); setLoading(false); return; }
     try {
       setLoading(true);
       const { data, error } = await supabase
@@ -22,6 +25,15 @@ export function useJobs() {
       if (error) throw error;
       setJobs((data || []) as Job[]);
       setError(null);
+
+      const { data: historyRows, error: historyError } = await supabase
+        .from('job_status_history')
+        .select('job_id')
+        .eq('user_id', user.id)
+        .eq('to_status', 'interviewing');
+      if (!historyError) {
+        setEverInterviewedJobIds(new Set((historyRows || []).map(r => r.job_id)));
+      }
     } catch (err) {
       setError(err as Error);
       toast({ title: 'Error fetching jobs', description: (err as Error).message, variant: 'destructive' });
@@ -39,7 +51,7 @@ export function useJobs() {
       .on('postgres_changes', { event: '*', schema: 'public', table: 'jobs', filter: `user_id=eq.${user.id}` },
         (payload) => {
           if (payload.eventType === 'INSERT') {
-            setJobs(prev => [payload.new as Job, ...prev]);
+            setJobs(prev => prev.some(j => j.id === (payload.new as Job).id) ? prev : [payload.new as Job, ...prev]);
           } else if (payload.eventType === 'UPDATE') {
             setJobs(prev => prev.map(job => job.id === payload.new.id ? (payload.new as Job) : job));
           } else if (payload.eventType === 'DELETE') {
@@ -77,11 +89,17 @@ export function useJobs() {
       toast({ title: 'Error creating job', description: error.message, variant: 'destructive' });
       return { error };
     }
-    await supabase.from('job_status_history').insert({
+    // De-duplicated local update — don't rely solely on the Realtime INSERT event
+    setJobs(prev => (prev.some(j => j.id === data.id) ? prev : [data as Job, ...prev]));
+    const { error: historyError } = await supabase.from('job_status_history').insert({
       job_id: data.id, user_id: user.id,
       from_status: null, to_status: input.status || 'saved',
     });
-    toast({ title: 'Job added!', description: `${input.company_name} - ${input.job_title}` });
+    if (historyError) {
+      toast({ title: 'Job added, but history log failed', description: historyError.message, variant: 'destructive' });
+    } else {
+      toast({ title: 'Job added!', description: `${input.company_name} - ${input.job_title}` });
+    }
     return { data };
   };
 
@@ -93,6 +111,7 @@ export function useJobs() {
       toast({ title: 'Error updating job', description: error.message, variant: 'destructive' });
       return { error };
     }
+    setJobs(prev => prev.map(job => job.id === jobId ? (data as Job) : job));
     return { data };
   };
 
@@ -107,15 +126,36 @@ export function useJobs() {
       toast({ title: 'Error updating status', description: error.message, variant: 'destructive' });
       return { error };
     }
-    await supabase.from('job_status_history').insert({
+    setJobs(prev => prev.map(j => j.id === jobId ? (data as Job) : j));
+    if (newStatus === 'interviewing') {
+      setEverInterviewedJobIds(prev => new Set(prev).add(jobId));
+    }
+    const { error: historyError } = await supabase.from('job_status_history').insert({
       job_id: jobId, user_id: user.id, from_status: oldStatus, to_status: newStatus, reason,
     });
-    toast({ title: 'Status updated', description: `Changed to ${newStatus}` });
+    if (historyError) {
+      toast({ title: 'Status updated, but history log failed', description: historyError.message, variant: 'destructive' });
+    } else {
+      toast({ title: 'Status updated', description: `Changed to ${newStatus}` });
+    }
     return { data };
   };
 
   const deleteJob = async (jobId: string) => {
     if (!user) return { error: new Error('Not authenticated') };
+
+    // Clean up storage objects first — deleting the job row cascades the
+    // job_documents metadata rows, but does NOT remove the underlying
+    // Storage objects, which would otherwise be orphaned.
+    const { data: docs } = await supabase
+      .from('job_documents')
+      .select('file_path')
+      .eq('job_id', jobId)
+      .eq('user_id', user.id);
+    if (docs && docs.length > 0) {
+      await supabase.storage.from('job-documents').remove(docs.map(d => d.file_path));
+    }
+
     // Optimistic UI: remove immediately, realtime will confirm
     setJobs(prev => prev.filter(job => job.id !== jobId));
     const { error } = await supabase.from('jobs').delete().eq('id', jobId).eq('user_id', user.id);
@@ -129,5 +169,5 @@ export function useJobs() {
     return { success: true };
   };
 
-  return { jobs, loading, error, createJob, updateJob, updateJobStatus, deleteJob, refetch: fetchJobs };
+  return { jobs, loading, error, everInterviewedJobIds, createJob, updateJob, updateJobStatus, deleteJob, refetch: fetchJobs };
 }
