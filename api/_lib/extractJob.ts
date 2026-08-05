@@ -1,7 +1,10 @@
-const FETCH_TIMEOUT_MS = 10_000;
+const FETCH_TIMEOUT_MS = 8_000;
 const MAX_HTML_BYTES = 2_000_000; // 2 MB — plenty for a job posting page
-const MAX_TEXT_CHARS = 8_000; // keeps the Groq prompt small, fast, and cheap
-const GROQ_MODEL = 'llama-3.3-70b-versatile';
+const MAX_TEXT_CHARS = 4_000; // keeps the Groq prompt small and fast — a job posting rarely needs more
+// Small + fast model: job postings are short and the schema is simple, so
+// the extra quality of the 70B model isn't worth several extra seconds of
+// latency for this use case.
+const GROQ_MODEL = 'llama-3.1-8b-instant';
 
 export interface ExtractedJob {
   job_title: string | null;
