@@ -44,6 +44,12 @@ Job Whisperer is a job application tracker that helps you manage your job search
       `supabase functions deploy delete-account`. It runs with the
       project's service-role key (available to Edge Functions automatically)
       to remove Storage objects and the Auth user server-side.
+    - Deploy the AI job-extraction Edge Function:
+      `supabase functions deploy extract-job`, then set a Groq API key
+      (from [console.groq.com](https://console.groq.com)) as its secret:
+      `supabase secrets set GROQ_API_KEY=your-key-here`. Without this secret
+      the "Fill with Groq AI" button in Add Job will fail gracefully and ask
+      for manual entry — everything else in the app works fine without it.
 
 5.  **Run the development server:**
     ```bash
