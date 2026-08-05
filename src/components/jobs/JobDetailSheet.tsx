@@ -13,6 +13,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { StatusBadge } from './StatusBadge';
+import { CompanyLogo } from './CompanyLogo';
 import { NotesTimeline } from './NotesTimeline';
 import { StatusHistoryTimeline } from './StatusHistoryTimeline';
 import { useJobDocuments } from '@/hooks/useJobDocuments';
@@ -26,7 +27,6 @@ import {
   FileText,
   Download,
   Trash2,
-  Building2,
   Briefcase,
   ChevronDown,
   ChevronUp,
@@ -150,9 +150,7 @@ export function JobDetailSheet({
           <SheetHeader className="px-6 pt-6 pb-5 border-b border-border/30">
             <div className="flex items-start justify-between">
               <div className="flex items-start gap-3">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-muted">
-                  <Building2 className="h-5 w-5 text-muted-foreground" />
-                </div>
+                <CompanyLogo companyName={job.company_name} jobUrl={job.job_url} size={40} />
                 <div className="min-w-0 flex-1">
                   <SheetTitle className="text-base font-semibold text-foreground leading-tight">
                     {job.company_name}

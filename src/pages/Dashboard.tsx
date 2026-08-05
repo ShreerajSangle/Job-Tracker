@@ -2,6 +2,7 @@ import { useState, useMemo, useCallback, useEffect } from 'react';
 import { Navbar } from '@/components/layout/Navbar';
 import { JobDetailSheet } from '@/components/jobs/JobDetailSheet';
 import { QuickAddJobForm } from '@/components/jobs/QuickAddJobForm';
+import { CompanyLogo } from '@/components/jobs/CompanyLogo';
 import { useJobsContext } from '@/context/JobsContext';
 import { useJobStats } from '@/hooks/useJobStats';
 import { Job, JobStatus, JobSource, STATUS_CONFIG, SOURCE_CONFIG } from '@/types/job';
@@ -181,11 +182,14 @@ function JobRow({ job, onClick, onDelete, onChangeStatus }: {
     >
       {/* Company + title */}
       <td className="py-3 pl-4 pr-3">
-        <div className="flex items-center gap-2">
-          <UrgencyDot deadline={job.deadline_date} />
-          <div>
-            <p className="text-sm font-medium text-foreground leading-tight">{job.company_name}</p>
-            <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">{job.job_title}</p>
+        <div className="flex items-center gap-2.5">
+          <CompanyLogo companyName={job.company_name} jobUrl={job.job_url} size={28} />
+          <div className="flex items-center gap-2 min-w-0">
+            <UrgencyDot deadline={job.deadline_date} />
+            <div className="min-w-0">
+              <p className="text-sm font-medium text-foreground leading-tight truncate">{job.company_name}</p>
+              <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">{job.job_title}</p>
+            </div>
           </div>
         </div>
       </td>
@@ -274,6 +278,7 @@ function MobileJobCard({ job, onClick, onDelete, onChangeStatus }: {
       onClick={onClick}
       className="flex items-start gap-3 rounded-xl border border-border/30 bg-card p-3 cursor-pointer hover:border-border/60 hover:bg-muted/20 transition-all"
     >
+      <CompanyLogo companyName={job.company_name} jobUrl={job.job_url} size={36} className="mt-0.5" />
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-1.5 mb-0.5">
           <UrgencyDot deadline={job.deadline_date} />
