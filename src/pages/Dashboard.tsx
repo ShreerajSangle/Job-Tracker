@@ -55,10 +55,10 @@ function StatPill({ label, value, icon: Icon, colorClass }: {
   label: string; value: number; icon: React.ElementType; colorClass: string;
 }) {
   return (
-    <div className="flex items-center gap-2 rounded-lg border border-border/40 bg-card/60 px-3 py-2 min-w-0">
-      <Icon className={`h-3.5 w-3.5 shrink-0 ${colorClass}`} />
-      <span className="text-base font-semibold tabular-nums text-foreground leading-none">{value}</span>
-      <span className="text-[11px] text-muted-foreground uppercase tracking-wider truncate">{label}</span>
+    <div className="glass flex items-center gap-2.5 rounded-xl px-3.5 py-3 min-w-0 transition-transform duration-200 hover:-translate-y-0.5">
+      <Icon className={`h-4 w-4 shrink-0 ${colorClass}`} />
+      <span className="text-[clamp(1.125rem,2.5vw,1.375rem)] font-semibold tabular-nums text-foreground leading-none">{value}</span>
+      <span className="text-[11px] font-medium text-muted-foreground/80 uppercase tracking-wider truncate">{label}</span>
     </div>
   );
 }
@@ -86,7 +86,7 @@ function StatusBadge({ status, jobId, onChangeStatus }: {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <button
-          className={`inline-flex items-center px-2 py-0.5 rounded-full border text-[11px] font-medium transition-opacity hover:opacity-80 ${
+          className={`inline-flex items-center px-2 py-0.5 rounded-full border text-[11px] font-medium transition-opacity duration-200 hover:opacity-80 ${
             STATUS_COLORS[status]
           }`}
           onClick={(e) => e.stopPropagation()}
@@ -178,7 +178,7 @@ function JobRow({ job, onClick, onDelete, onChangeStatus }: {
   return (
     <tr
       onClick={onClick}
-      className="group border-b border-border/20 hover:bg-muted/20 cursor-pointer transition-colors"
+      className="group border-b border-border/20 hover:bg-muted/20 cursor-pointer transition-colors duration-200"
     >
       {/* Company + title */}
       <td className="py-3 pl-4 pr-3">
@@ -247,7 +247,7 @@ function JobRow({ job, onClick, onDelete, onChangeStatus }: {
               target="_blank"
               rel="noopener noreferrer"
               onClick={(e) => e.stopPropagation()}
-              className="p-1.5 rounded hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
+              className="p-1.5 rounded hover:bg-muted text-muted-foreground hover:text-foreground transition-colors duration-200"
               title="Open job posting"
             >
               <ExternalLink className="h-3.5 w-3.5" />
@@ -255,7 +255,7 @@ function JobRow({ job, onClick, onDelete, onChangeStatus }: {
           )}
           <button
             onClick={onDelete}
-            className="p-1.5 rounded hover:bg-rose-500/10 text-muted-foreground hover:text-rose-400 transition-colors"
+            className="p-1.5 rounded hover:bg-rose-500/10 text-muted-foreground hover:text-rose-400 transition-colors duration-200"
             title="Delete"
           >
             <Trash2 className="h-3.5 w-3.5" />
@@ -276,7 +276,7 @@ function MobileJobCard({ job, onClick, onDelete, onChangeStatus }: {
   return (
     <div
       onClick={onClick}
-      className="flex items-start gap-3 rounded-xl border border-border/30 bg-card p-3 cursor-pointer hover:border-border/60 hover:bg-muted/20 transition-all"
+      className="flex items-start gap-3 rounded-xl border border-border/30 bg-card p-3 cursor-pointer hover:border-border/60 hover:bg-muted/20 transition-all duration-200"
     >
       <CompanyLogo companyName={job.company_name} jobUrl={job.job_url} size={36} className="mt-0.5" />
       <div className="flex-1 min-w-0">
@@ -466,8 +466,8 @@ export default function Dashboard() {
       <main className="flex-1 flex flex-col min-h-0">
 
         {/* ── Stats bar ─────────────────────────────────────────────────── */}
-        <section className="container shrink-0 pt-5 pb-3 space-y-3">
-          <div className="flex flex-wrap gap-2">
+        <section className="container shrink-0 pt-5 pb-3 space-y-3.5">
+          <div className="grid grid-cols-2 gap-2.5 sm:flex sm:flex-wrap sm:gap-3">
             <StatPill label="Total"     value={stats.total}                 icon={Briefcase}     colorClass="text-foreground" />
             <StatPill label="Applied"   value={stats.byStatus.applied}      icon={Send}          colorClass="text-sky-400" />
             <StatPill label="Interview" value={stats.byStatus.interviewing} icon={MessageSquare} colorClass="text-amber-400" />
@@ -523,7 +523,7 @@ export default function Dashboard() {
         <UpcomingPanel jobs={jobs} />
 
         {/* ── Filters row ───────────────────────────────────────────────── */}
-        <section className="container pb-3 shrink-0">
+        <section className="sticky top-14 z-30 container pb-3 pt-2 shrink-0 bg-background/85 backdrop-blur-xl border-b border-border/20">
           <div className="flex gap-2 items-center flex-wrap">
             <div className="relative flex-1 min-w-[140px] max-w-xs">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />

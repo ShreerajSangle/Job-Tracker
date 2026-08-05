@@ -29,7 +29,7 @@
     --border: 225 10% 16%;
     --input: 225 10% 16%;
     --ring: 220 55% 55%;
-    --radius: 0.5rem;
+    --radius: 0.75rem;
     /* Status colors */
     --status-saved: 220 10% 48%;
     --status-applied: 215 50% 52%;
@@ -102,7 +102,9 @@
   * { @apply border-border; }
 
   html {
-    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    /* Prefer the native system font (San Francisco on Apple platforms) so the
+       app feels native there; Inter is the web fallback everywhere else. */
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
@@ -112,10 +114,17 @@
     font-feature-settings: "rlig" 1, "calt" 1;
     transition: background-color 200ms ease, color 200ms ease;
   }
+
+  /* A calm, consistent "ease-out" feel across interactive elements — only
+     takes effect where a component doesn't already set its own timing
+     function via a Tailwind ease-* utility. */
+  button, a, [role="button"], input, select, textarea {
+    transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+  }
 }
 
 @layer utilities {
-  .glass { @apply bg-card/80 backdrop-blur-xl border border-border; }
+  .glass { @apply bg-card/75 backdrop-blur-xl border border-border/60 shadow-lg shadow-black/5; }
 }
 
 /* Custom scrollbar — subtle */
