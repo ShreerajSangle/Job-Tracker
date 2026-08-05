@@ -140,11 +140,23 @@ export function QuickAddJobForm({ trigger }: QuickAddJobFormProps) {
     setExtracting(false);
 
     if (error || !data?.data) {
-      toast({
-        title: "Couldn't auto-fill",
-        description: 'Please enter the details manually.',
-        variant: 'destructive',
-      });
+      // supabase-js doesn't parse the Edge Function's JSON error body for us —
+      // do it ourselves so failures are actually diagnosable instead of always
+      // showing the same generic message.
+      let description = 'Please enter the details manually.';
+      const context = (error as { context?: Response })?.context;
+      if (context) {
+        try {
+          const body = await context.clone().json();
+          if (body?.error) description = body.error;
+        } catch {
+          try {
+            const text = await context.clone().text();
+            if (text) description = text.slice(0, 300);
+          } catch { /* keep the generic fallback */ }
+        }
+      }
+      toast({ title: "Couldn't auto-fill", description, variant: 'destructive' });
       return;
     }
 
