@@ -60,8 +60,7 @@ Job Whisperer is a job application tracker that helps you manage your job search
   headers).
 - Set the same environment variables from step 3 in your hosting provider's
   dashboard before building for production.
-- Before shipping changes, run the full release gate locally (also enforced
-  in CI via `.github/workflows/ci.yml`):
+- Before shipping changes, run the full release gate locally:
   ```bash
   npm ci
   npm run lint
