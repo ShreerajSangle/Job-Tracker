@@ -38,8 +38,9 @@ Job Whisperer is a job application tracker that helps you manage your job search
       types allowed.
     - Under **Authentication → URL Configuration**, add your app's origin(s)
       (e.g. `http://localhost:8080` for local dev, and your production
-      domain) to the **Redirect URLs** allowlist — required for the
-      email-confirmation link in Signup to redirect back correctly.
+      domain) to the **Redirect URLs** allowlist — required for both the
+      email-confirmation link in Signup and the `/reset-password` link from
+      "Forgot password?" on Login to redirect back correctly.
     - Under **Settings → API**, copy the **service_role** key — you'll need
       it for `SUPABASE_SERVICE_ROLE_KEY` below. Keep it secret; it bypasses
       Row Level Security entirely.
