@@ -12,9 +12,18 @@ export function useJobs() {
   // Job IDs that reached "interviewing" at any point, even if later rejected —
   // current `status` alone under-counts the interview funnel for such jobs.
   const [everInterviewedJobIds, setEverInterviewedJobIds] = useState<Set<string>>(new Set());
+  // Job IDs that have at least one uploaded document — lets the dashboard
+  // table show a Resume indicator per row without a per-row query.
+  const [jobIdsWithDocuments, setJobIdsWithDocuments] = useState<Set<string>>(new Set());
 
   const fetchJobs = useCallback(async () => {
-    if (!user) { setJobs([]); setEverInterviewedJobIds(new Set()); setLoading(false); return; }
+    if (!user) {
+      setJobs([]);
+      setEverInterviewedJobIds(new Set());
+      setJobIdsWithDocuments(new Set());
+      setLoading(false);
+      return;
+    }
     try {
       setLoading(true);
       const { data, error } = await supabase
@@ -33,6 +42,14 @@ export function useJobs() {
         .eq('to_status', 'interviewing');
       if (!historyError) {
         setEverInterviewedJobIds(new Set((historyRows || []).map(r => r.job_id)));
+      }
+
+      const { data: docRows, error: docError } = await supabase
+        .from('job_documents')
+        .select('job_id')
+        .eq('user_id', user.id);
+      if (!docError) {
+        setJobIdsWithDocuments(new Set((docRows || []).map(r => r.job_id)));
       }
     } catch (err) {
       setError(err as Error);
@@ -169,5 +186,8 @@ export function useJobs() {
     return { success: true };
   };
 
-  return { jobs, loading, error, everInterviewedJobIds, createJob, updateJob, updateJobStatus, deleteJob, refetch: fetchJobs };
+  return {
+    jobs, loading, error, everInterviewedJobIds, jobIdsWithDocuments,
+    createJob, updateJob, updateJobStatus, deleteJob, refetch: fetchJobs,
+  };
 }

@@ -17,20 +17,9 @@ import {
 import {
   Loader2, Search, Briefcase, Plus, Send, MessageSquare,
   CheckCircle, XCircle, Gift, AlertCircle, Bell,
-  ArrowUpDown, ArrowUp, ArrowDown, Trash2, ExternalLink,
+  ArrowUpDown, ArrowUp, ArrowDown, ExternalLink, FileText,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
-import { Badge } from '@/components/ui/badge';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -157,108 +146,87 @@ function UpcomingPanel({ jobs }: { jobs: Job[] }) {
 }
 
 // ─── Table row ─────────────────────────────────────────────────────────────
-function JobRow({ job, onClick, onDelete, onChangeStatus }: {
+function JobRow({ job, onClick, onChangeStatus, hasResume }: {
   job: Job;
   onClick: () => void;
-  onDelete: (e: React.MouseEvent) => void;
   onChangeStatus: (id: string, s: JobStatus) => void;
+  hasResume: boolean;
 }) {
   return (
     <tr
       onClick={onClick}
       className="group border-b border-border/20 hover:bg-muted/20 cursor-pointer transition-colors duration-200"
     >
-      {/* Company + title */}
-      <td className="py-3 pl-4 pr-3">
-        <div className="flex items-center gap-2.5">
-          <CompanyLogo companyName={job.company_name} jobUrl={job.job_url} size={28} />
+      {/* Company */}
+      <td className="py-3.5 pl-4 pr-3">
+        <div className="flex items-center gap-2.5 min-w-0">
+          <CompanyLogo companyName={job.company_name} jobUrl={job.job_url} size={32} />
           <div className="flex items-center gap-2 min-w-0">
             <UrgencyDot deadline={job.deadline_date} />
-            <div className="min-w-0">
-              <p className="text-sm font-medium text-foreground leading-tight truncate">{job.company_name}</p>
-              <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">{job.job_title}</p>
-            </div>
+            <p className="text-sm font-semibold text-foreground truncate">{job.company_name}</p>
           </div>
         </div>
       </td>
+      {/* Role */}
+      <td className="py-3.5 px-3">
+        <p className="text-sm font-semibold text-foreground leading-snug">{job.job_title}</p>
+      </td>
+      {/* Location */}
+      <td className="py-3.5 px-3 hidden sm:table-cell">
+        <span className="text-sm text-muted-foreground">{job.location || '—'}</span>
+      </td>
       {/* Status — inline change */}
-      <td className="py-3 px-3">
+      <td className="py-3.5 px-3">
         <StatusBadge status={job.status as JobStatus} jobId={job.id} onChangeStatus={onChangeStatus} />
       </td>
-      {/* Source */}
-      <td className="py-3 px-3 hidden sm:table-cell">
-        {job.source ? (
-          <span className={`text-[11px] px-2 py-0.5 rounded border ${
-            SOURCE_CONFIG[job.source]?.bgColor ?? 'bg-muted'
-          } ${SOURCE_CONFIG[job.source]?.color ?? 'text-muted-foreground'} border-transparent`}>
-            {SOURCE_CONFIG[job.source]?.label ?? job.source}
-          </span>
+      {/* Apply */}
+      <td className="py-3.5 px-3 hidden md:table-cell">
+        {job.job_url ? (
+          <a
+            href={job.job_url}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={(e) => e.stopPropagation()}
+            className="inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline"
+          >
+            Link <ExternalLink className="h-3.5 w-3.5" />
+          </a>
         ) : (
-          <span className="text-[11px] text-muted-foreground/40">—</span>
+          <span className="text-sm text-muted-foreground/40">—</span>
         )}
       </td>
-      {/* Salary */}
-      <td className="py-3 px-3 hidden md:table-cell">
-        {job.salary_min ? (
-          <span className="text-xs text-muted-foreground tabular-nums">
-            {job.currency || '$'}{job.salary_min.toLocaleString()}{job.salary_max ? `–${job.salary_max.toLocaleString()}` : '+'}
+      {/* Resume */}
+      <td className="py-3.5 px-3 hidden lg:table-cell">
+        {hasResume ? (
+          <span className="inline-flex items-center gap-1 text-sm font-medium text-amber-400">
+            <FileText className="h-3.5 w-3.5" /> View
           </span>
         ) : (
-          <span className="text-xs text-muted-foreground/30">—</span>
+          <span className="text-sm text-muted-foreground/40">—</span>
         )}
       </td>
-      {/* Date applied */}
-      <td className="py-3 px-3 hidden sm:table-cell">
-        <span className="text-xs text-muted-foreground tabular-nums">
-          {job.applied_date
-            ? new Date(job.applied_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: '2-digit' })
-            : '—'}
+      {/* Notes */}
+      <td className="py-3.5 px-3 hidden lg:table-cell">
+        <span className="inline-flex items-center gap-1 text-sm font-medium text-amber-400">
+          <FileText className="h-3.5 w-3.5" /> View
         </span>
       </td>
-      {/* Tags */}
-      <td className="py-3 px-3 hidden lg:table-cell">
-        <div className="flex flex-wrap gap-1">
-          {(job.tags ?? []).slice(0, 2).map(t => (
-            <span key={t} className="text-[10px] px-1.5 py-0.5 rounded-full bg-primary/10 text-primary">{t}</span>
-          ))}
-          {(job.tags ?? []).length > 2 && (
-            <span className="text-[10px] text-muted-foreground/60">+{job.tags!.length - 2}</span>
-          )}
-        </div>
-      </td>
-      {/* Actions */}
-      <td className="py-3 pl-3 pr-4">
-        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity justify-end">
-          {job.job_url && (
-            <a
-              href={job.job_url}
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={(e) => e.stopPropagation()}
-              className="p-1.5 rounded hover:bg-muted text-muted-foreground hover:text-foreground transition-colors duration-200"
-              title="Open job posting"
-            >
-              <ExternalLink className="h-3.5 w-3.5" />
-            </a>
-          )}
-          <button
-            onClick={onDelete}
-            className="p-1.5 rounded hover:bg-rose-500/10 text-muted-foreground hover:text-rose-400 transition-colors duration-200"
-            title="Delete"
-          >
-            <Trash2 className="h-3.5 w-3.5" />
-          </button>
-        </div>
+      {/* Date applied */}
+      <td className="py-3.5 pl-3 pr-4">
+        <span className="text-sm text-muted-foreground tabular-nums">
+          {job.applied_date
+            ? new Date(job.applied_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })
+            : '—'}
+        </span>
       </td>
     </tr>
   );
 }
 
 // ─── Mobile card ───────────────────────────────────────────────────────────
-function MobileJobCard({ job, onClick, onDelete, onChangeStatus }: {
+function MobileJobCard({ job, onClick, onChangeStatus }: {
   job: Job;
   onClick: () => void;
-  onDelete: (e: React.MouseEvent) => void;
   onChangeStatus: (id: string, s: JobStatus) => void;
 }) {
   return (
@@ -270,18 +238,14 @@ function MobileJobCard({ job, onClick, onDelete, onChangeStatus }: {
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-1.5 mb-0.5">
           <UrgencyDot deadline={job.deadline_date} />
-          <p className="text-sm font-medium text-foreground truncate">{job.company_name}</p>
+          <p className="text-sm font-semibold text-foreground truncate">{job.company_name}</p>
         </div>
-        <p className="text-xs text-muted-foreground truncate mb-2">{job.job_title}</p>
-        <div className="flex items-center gap-2 flex-wrap">
+        <p className="text-xs text-muted-foreground truncate mb-0.5">{job.job_title}</p>
+        {job.location && (
+          <p className="text-[11px] text-muted-foreground/70 truncate mb-2">{job.location}</p>
+        )}
+        <div className="flex items-center gap-2 flex-wrap mt-2">
           <StatusBadge status={job.status as JobStatus} jobId={job.id} onChangeStatus={onChangeStatus} />
-          {job.source && (
-            <span className={`text-[10px] px-1.5 py-0.5 rounded ${
-              SOURCE_CONFIG[job.source]?.bgColor ?? 'bg-muted'
-            } ${SOURCE_CONFIG[job.source]?.color ?? 'text-muted-foreground'}`}>
-              {SOURCE_CONFIG[job.source]?.label ?? job.source}
-            </span>
-          )}
           {job.applied_date && (
             <span className="text-[10px] text-muted-foreground/60">
               {new Date(job.applied_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
@@ -289,13 +253,6 @@ function MobileJobCard({ job, onClick, onDelete, onChangeStatus }: {
           )}
         </div>
       </div>
-      <button
-        onClick={onDelete}
-        className="p-1.5 rounded hover:bg-rose-500/10 text-muted-foreground/30 hover:text-rose-400 transition-colors shrink-0 mt-0.5"
-        title="Delete"
-      >
-        <Trash2 className="h-4 w-4" />
-      </button>
     </div>
   );
 }
@@ -310,7 +267,7 @@ function SortIcon({ field, active, dir }: { field: SortField; active: SortField;
 
 // ─── Main Dashboard ────────────────────────────────────────────────────────
 export default function Dashboard() {
-  const { jobs, loading, error, everInterviewedJobIds, updateJobStatus, deleteJob } = useJobsContext();
+  const { jobs, loading, error, everInterviewedJobIds, jobIdsWithDocuments, updateJobStatus, deleteJob } = useJobsContext();
   const stats = useJobStats(jobs, everInterviewedJobIds);
 
   const [searchTerm,   setSearchTerm]   = useState('');
@@ -318,7 +275,6 @@ export default function Dashboard() {
   const [statusFilter, setStatusFilter] = useState<JobStatus | 'all'>('all');
   const [tagFilter,    setTagFilter]    = useState('');
   const [selectedJobId,  setSelectedJobId]  = useState<string | null>(null);
-  const [deleteJobId,    setDeleteJobId]    = useState<string | null>(null);
   const [sortField, setSortField] = useState<SortField>('date');
   const [sortDir,   setSortDir]   = useState<SortDir>('desc');
 
@@ -389,10 +345,6 @@ export default function Dashboard() {
   const clearFilters = useCallback(() => {
     setSearchTerm(''); setTagFilter(''); setStatusFilter('all'); setSourceFilter('all');
   }, []);
-
-  const handleConfirmDelete = useCallback(async () => {
-    if (deleteJobId) { await deleteJob(deleteJobId); setDeleteJobId(null); }
-  }, [deleteJobId, deleteJob]);
 
   const handleChangeStatus = useCallback(async (id: string, s: JobStatus) => {
     await updateJobStatus(id, s);
@@ -561,38 +513,43 @@ export default function Dashboard() {
               <thead>
                 <tr className="border-b border-border/30 bg-muted/30">
                   <th className="py-2.5 pl-4 pr-3 text-left">
-                    <button onClick={() => toggleSort('company')} className="flex items-center text-[11px] font-medium text-muted-foreground uppercase tracking-wider hover:text-foreground">
-                      Company / Role <SortIcon field="company" active={sortField} dir={sortDir} />
+                    <button onClick={() => toggleSort('company')} className="flex items-center text-[11px] font-semibold text-muted-foreground uppercase tracking-wider hover:text-foreground">
+                      Company <SortIcon field="company" active={sortField} dir={sortDir} />
                     </button>
                   </th>
                   <th className="py-2.5 px-3 text-left">
-                    <button onClick={() => toggleSort('status')} className="flex items-center text-[11px] font-medium text-muted-foreground uppercase tracking-wider hover:text-foreground">
+                    <button onClick={() => toggleSort('title')} className="flex items-center text-[11px] font-semibold text-muted-foreground uppercase tracking-wider hover:text-foreground">
+                      Role <SortIcon field="title" active={sortField} dir={sortDir} />
+                    </button>
+                  </th>
+                  <th className="py-2.5 px-3 text-left hidden sm:table-cell">
+                    <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Location</span>
+                  </th>
+                  <th className="py-2.5 px-3 text-left">
+                    <button onClick={() => toggleSort('status')} className="flex items-center text-[11px] font-semibold text-muted-foreground uppercase tracking-wider hover:text-foreground">
                       Status <SortIcon field="status" active={sortField} dir={sortDir} />
                     </button>
                   </th>
-                  <th className="py-2.5 px-3 text-left hidden sm:table-cell">
-                    <span className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">Source</span>
-                  </th>
                   <th className="py-2.5 px-3 text-left hidden md:table-cell">
-                    <span className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">Salary</span>
-                  </th>
-                  <th className="py-2.5 px-3 text-left hidden sm:table-cell">
-                    <button onClick={() => toggleSort('date')} className="flex items-center text-[11px] font-medium text-muted-foreground uppercase tracking-wider hover:text-foreground">
-                      Applied <SortIcon field="date" active={sortField} dir={sortDir} />
-                    </button>
+                    <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Apply</span>
                   </th>
                   <th className="py-2.5 px-3 text-left hidden lg:table-cell">
-                    <span className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">Tags</span>
+                    <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Resume</span>
                   </th>
-                  <th className="py-2.5 pl-3 pr-4 text-right">
-                    <span className="sr-only">Actions</span>
+                  <th className="py-2.5 px-3 text-left hidden lg:table-cell">
+                    <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Notes</span>
+                  </th>
+                  <th className="py-2.5 pl-3 pr-4 text-left">
+                    <button onClick={() => toggleSort('date')} className="flex items-center text-[11px] font-semibold text-muted-foreground uppercase tracking-wider hover:text-foreground">
+                      Date <SortIcon field="date" active={sortField} dir={sortDir} />
+                    </button>
                   </th>
                 </tr>
               </thead>
               <tbody>
                 {filteredSorted.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="py-16 text-center">
+                    <td colSpan={8} className="py-16 text-center">
                       <Briefcase className="h-7 w-7 text-muted-foreground/20 mx-auto mb-2" />
                       <p className="text-sm text-muted-foreground">No jobs match your filters</p>
                     </td>
@@ -603,8 +560,8 @@ export default function Dashboard() {
                       key={job.id}
                       job={job}
                       onClick={() => setSelectedJobId(job.id)}
-                      onDelete={e => { e.stopPropagation(); setDeleteJobId(job.id); }}
                       onChangeStatus={handleChangeStatus}
+                      hasResume={jobIdsWithDocuments.has(job.id)}
                     />
                   ))
                 )}
@@ -627,7 +584,6 @@ export default function Dashboard() {
                   key={job.id}
                   job={job}
                   onClick={() => setSelectedJobId(job.id)}
-                  onDelete={e => { e.stopPropagation(); setDeleteJobId(job.id); }}
                   onChangeStatus={handleChangeStatus}
                 />
               ))
@@ -646,27 +602,6 @@ export default function Dashboard() {
           onDelete={handleDeleteFromSheet}
         />
       )}
-
-      {/* ── Delete confirmation ───────────────────────────────────────── */}
-      <AlertDialog open={!!deleteJobId} onOpenChange={o => { if (!o) setDeleteJobId(null); }}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete this application?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This will permanently remove the job and all its notes, status history, and documents.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-              onClick={handleConfirmDelete}
-            >
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </div>
   );
 }
