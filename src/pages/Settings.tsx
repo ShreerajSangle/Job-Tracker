@@ -163,7 +163,7 @@ export default function Settings() {
                   <Input
                     id="new-password" type="password" placeholder="••••••••"
                     value={newPassword} onChange={(e) => setNewPassword(e.target.value)}
-                    minLength={8} required autoComplete="new-password"
+                    required autoComplete="new-password"
                   />
                 </div>
                 <div className="space-y-2">
@@ -171,7 +171,7 @@ export default function Settings() {
                   <Input
                     id="confirm-password" type="password" placeholder="••••••••"
                     value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)}
-                    minLength={8} required autoComplete="new-password"
+                    required autoComplete="new-password"
                   />
                 </div>
                 <Button type="submit" disabled={passwordLoading} className="gap-2">

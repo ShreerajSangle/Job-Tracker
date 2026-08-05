@@ -243,7 +243,6 @@ export default function SignupPage() {
                     type={showPw ? 'text' : 'password'}
                     autoComplete="new-password"
                     required
-                    minLength={8}
                     value={password}
                     onChange={e => setPassword(e.target.value)}
                     placeholder="Min. 8 characters"
