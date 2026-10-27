@@ -72,8 +72,8 @@ function requestPinned(target: PublicTarget, opts: FetchOptions = {}): Promise<O
       },
     };
     let settled = false;
-    let timer: ReturnType<typeof setTimeout>;
-    const fail = (e: Error) => { if (settled) return; settled = true; clearTimeout(timer); reject(e); };
+    const timerRef: { t?: ReturnType<typeof setTimeout> } = {};
+    const fail = (e: Error) => { if (settled) return; settled = true; clearTimeout(timerRef.t); reject(e); };
     const onResponse = (res: IncomingMessage) => {
       const chunks: Buffer[] = [];
       let total = 0;
@@ -85,7 +85,7 @@ function requestPinned(target: PublicTarget, opts: FetchOptions = {}): Promise<O
       });
       res.on('end', () => {
         if (settled) return;
-        settled = true; clearTimeout(timer);
+        settled = true; clearTimeout(timerRef.t);
         resolve({ status: res.statusCode ?? 0, headers: res.headers, body: Buffer.concat(chunks) });
       });
       res.on('error', fail);
@@ -93,7 +93,7 @@ function requestPinned(target: PublicTarget, opts: FetchOptions = {}): Promise<O
     const req = target.url.protocol === 'https:'
       ? httpsRequest({ ...common, servername: target.url.hostname }, onResponse)
       : httpRequest(common, onResponse);
-    timer = setTimeout(() => req.destroy(new Error('Request timed out')), REQUEST_TIMEOUT_MS);
+    timerRef.t = setTimeout(() => req.destroy(new Error('Request timed out')), REQUEST_TIMEOUT_MS);
     req.on('error', fail);
     req.end();
   });
