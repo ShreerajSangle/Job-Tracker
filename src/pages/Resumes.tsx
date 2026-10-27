@@ -8,6 +8,7 @@ import {
 } from '@/features/resumes/queries';
 import { usageByResume } from '@/features/resumes/usage';
 import { formatDay } from '@/lib/format';
+import { useDocumentTitle } from '@/lib/useDocumentTitle';
 
 const ACCEPT = '.pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document';
 
@@ -67,6 +68,7 @@ export default function Resumes() {
   const upload = useUploadVersion();
   const input = useRef<HTMLInputElement>(null);
   const usage = usageByResume(resumes, apps);
+  useDocumentTitle('Resumes');
 
   return (
     <div className="min-h-screen bg-background">

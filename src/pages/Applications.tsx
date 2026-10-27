@@ -1,13 +1,17 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Download, ExternalLink, Plus } from 'lucide-react';
 import { Navbar } from '@/components/layout/Navbar';
 import { PageShell } from '@/components/Surface';
-import { useApplications, useSetStatus } from '@/features/applications/queries';
+import { useApplications, useUpdateApplication } from '@/features/applications/queries';
 import { StatusPill } from '@/features/applications/StatusPill';
 import { ApplicationDialog } from '@/features/applications/ApplicationDialog';
 import { STATUSES, STATUS_STYLE, type Application, type ApplicationStatus } from '@/features/applications/types';
 import { openVersion, useResumes } from '@/features/resumes/queries';
-import { formatDay } from '@/lib/format';
+import { formatDay, relativeDay } from '@/lib/format';
+import { useDocumentTitle } from '@/lib/useDocumentTitle';
+import { toast } from '@/hooks/use-toast';
+import { ToastAction } from '@/components/ui/toast';
 import { toCsv } from '@/lib/csv';
 import { CompanyAvatar } from '@/components/CompanyAvatar';
 import { useAllStages } from '@/features/applications/stageQueries';
@@ -16,19 +20,36 @@ export default function Applications() {
   const { data: apps = [], isLoading, error } = useApplications();
   const { data: resumes = [] } = useResumes();
   const { data: stages = [] } = useAllStages();
-  const setStatus = useSetStatus();
+  const updateApp = useUpdateApplication();
+  const [params, setParams] = useSearchParams();
+  useDocumentTitle('Applications');
+  const changeStatus = (a: Application, next: ApplicationStatus) => {
+    if (next === a.status) return;
+    const prev = a.status;
+    updateApp.mutate({ id: a.id, patch: { status: next } });
+    toast({
+      title: `Moved to ${STATUS_STYLE[next].label}`, description: `${a.company} · ${a.role}`,
+      action: <ToastAction altText="Undo" onClick={() => updateApp.mutate({ id: a.id, patch: { status: prev } })}>Undo</ToastAction>,
+    });
+  };
   const [source, setSource] = useState('all');
   const [q, setQ] = useState('');
   const [filter, setFilter] = useState<ApplicationStatus | 'all'>('all');
   const [sheet, setSheet] = useState<{ open: boolean; app: Application | null }>({ open: false, app: null });
   const search = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    if (params.get('new') === '1') {
+      setSheet({ open: true, app: null });
+      params.delete('new');
+      setParams(params, { replace: true });
+    }
+  }, [params, setParams]);
 
   useEffect(() => {
     const h = (e: KeyboardEvent) => {
       const t = e.target as HTMLElement;
       if (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.tagName === 'SELECT') return;
       if (e.key === '/') { e.preventDefault(); search.current?.focus(); }
-      if (e.key === 'n') { e.preventDefault(); setSheet({ open: true, app: null }); }
     };
     window.addEventListener('keydown', h);
     return () => window.removeEventListener('keydown', h);
@@ -112,7 +133,7 @@ export default function Applications() {
                 onClick={() => setFilter(s)}
                 className={`rounded-full px-3 py-1.5 text-xs font-medium transition-colors active:scale-[0.97] ${filter === s ? 'bg-surface-3 text-cream' : 'text-ink-2 hover:text-cream'}`}
               >
-                {s === 'all' ? 'All' : STATUS_STYLE[s].label}
+                {s === 'all' ? 'All' : STATUS_STYLE[s].label}{' '}<span className="tabular-nums opacity-60">{s === 'all' ? apps.length : apps.filter((a) => a.status === s).length}</span>
               </button>
             ))}
           </div>
@@ -153,7 +174,7 @@ export default function Applications() {
                       <td className="hidden px-4 text-ink-2 lg:table-cell">{a.location || '—'}</td>
                       <td className="px-4">
                         <div className="flex items-center gap-2">
-                          <StatusPill status={a.status} onChange={(s) => setStatus(a.id, s)} />
+                          <StatusPill status={a.status} onChange={(s) => changeStatus(a, s)} />
                           {a.status === 'interviewing' && currentStage.get(a.id) && <span className="hidden truncate text-xs text-ink-2 sm:inline">{currentStage.get(a.id)}</span>}
                           {a.status === 'rejected' && a.rejected_stage_name && <span className="hidden truncate text-xs text-ink-2 sm:inline">at {a.rejected_stage_name}</span>}
                         </div>
@@ -170,7 +191,7 @@ export default function Applications() {
                         ) : <span className="text-ink-2">—</span>}
                       </td>
                       <td className="hidden max-w-[12rem] truncate px-4 text-ink-2 lg:table-cell">{a.notes || '—'}</td>
-                      <td className="px-4 tabular-nums text-ink-2">{formatDay(a.applied_on)}</td>
+                      <td className="px-4 tabular-nums text-ink-2" title={formatDay(a.applied_on)}>{relativeDay(a.applied_on)}</td>
                     </tr>
                   );
                 })}

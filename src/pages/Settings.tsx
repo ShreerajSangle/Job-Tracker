@@ -117,7 +117,7 @@ export default function Settings() {
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <Navbar />
-      <main className="flex-1 container py-8 max-w-2xl">
+      <main className="flex-1 container pt-8 pb-32 max-w-2xl">
         <div className="mb-6">
           <h1 className="text-2xl font-bold">Settings</h1>
           <p className="text-muted-foreground">Manage your account preferences</p>

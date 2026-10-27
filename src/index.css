@@ -60,3 +60,12 @@
     }
   }
 }
+
+/* Keyboard focus: visible everywhere, never hidden behind the dock. */
+html { scroll-padding-bottom: 7rem; scroll-padding-top: 4rem; }
+a:focus-visible, button:focus-visible, summary:focus-visible, [role="button"]:focus-visible { outline: 2px solid hsl(var(--green-ink)); outline-offset: 2px; }
+
+/* Dock magnification (set from Dock.tsx via --s). */
+.dock-item { transform: scale(var(--s, 1)); transform-origin: 50% 100%; transition: transform 180ms var(--ease-out), background-color 150ms, color 150ms; }
+.dock-item:active { transform: scale(calc(var(--s, 1) * 0.95)); }
+@media (prefers-reduced-motion: reduce) { .dock-item { transition: none; transform: none; } }

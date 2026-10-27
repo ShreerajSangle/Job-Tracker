@@ -9,6 +9,7 @@ import { usageByResume } from '@/features/resumes/usage';
 import { useCounterStats } from '@/features/stats/useCounterStats';
 import { useDaysLeft } from '@/features/stats/useDaysLeft';
 import { parseDay, todayISO } from '@/lib/format';
+import { useDocumentTitle } from '@/lib/useDocumentTitle';
 
 const label = 'font-mono text-[0.75rem] uppercase tracking-[0.04em] text-ink-2';
 const num = 'font-mono text-[clamp(2.25rem,5vw,3.5rem)] leading-none tracking-[-0.02em] tabular-nums';
@@ -37,6 +38,9 @@ export default function Dashboard() {
   const { data: stats } = useCounterStats();
   const { data: resumes = [] } = useResumes();
   const { daysLeft } = useDaysLeft();
+  useDocumentTitle('Dashboard');
+  const hour = new Date().getHours();
+  const greeting = hour < 5 ? 'Still up' : hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
 
   const today = todayISO();
   const todayCount = apps.filter((a) => a.applied_on === today).length;
@@ -59,6 +63,10 @@ export default function Dashboard() {
     <div className="min-h-screen bg-background">
       <Navbar />
       <PageShell>
+        <div className="mb-6">
+          <h1 className="font-display text-[clamp(1.75rem,3.5vw,2.5rem)] font-semibold tracking-[-0.02em] text-cream">{greeting}</h1>
+          <p className="text-sm text-ink-2">{new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })}</p>
+        </div>
         <div className="grid grid-cols-1 gap-3 md:grid-cols-12">
           <Surface className="reveal flex min-h-[11rem] flex-col justify-between bg-green p-6 md:col-span-4">
             <p className={label}>Applied today</p>
