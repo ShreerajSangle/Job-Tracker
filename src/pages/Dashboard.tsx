@@ -10,16 +10,11 @@ import { useCounterStats } from '@/features/stats/useCounterStats';
 import { useDaysLeft } from '@/features/stats/useDaysLeft';
 import { parseDay, todayISO } from '@/lib/format';
 import { useDocumentTitle } from '@/lib/useDocumentTitle';
+import { weeklyCounts } from '@/features/stats/weekly';
 import { needsFollowUp } from '@/features/applications/followUp';
 
 const label = 'font-mono text-[0.75rem] uppercase tracking-[0.04em] text-ink-2';
 const num = 'font-mono text-[clamp(2.25rem,5vw,3.5rem)] leading-none tracking-[-0.02em] tabular-nums';
-
-function weekStart(d: Date) {
-  const x = new Date(d.getFullYear(), d.getMonth(), d.getDate());
-  x.setDate(x.getDate() - ((x.getDay() + 6) % 7));
-  return x.getTime();
-}
 
 function Ring({ value }: { value: number }) {
   const r = 52, c = 2 * Math.PI * r;
@@ -46,10 +41,8 @@ export default function Dashboard() {
   const today = todayISO();
   const todayCount = apps.filter((a) => a.applied_on === today).length;
 
-  const thisWeek = weekStart(new Date());
-  const weeks = Array.from({ length: 5 }, (_, i) => thisWeek - (4 - i) * 7 * 864e5);
-  const weekly = weeks.map((w) => apps.filter((a) => weekStart(parseDay(a.applied_on)) === w).length);
-  const maxWeek = Math.max(1, ...weekly);
+  const weeks = weeklyCounts(apps.map((a) => parseDay(a.applied_on)), new Date(), 6);
+  const maxWeek = Math.max(1, ...weeks.map((w) => w.count));
 
   const byStatus = STATUSES.map((s) => ({ s, n: apps.filter((a) => a.status === s).length }));
   const followUps = apps.filter((a) => needsFollowUp(a)).length;
@@ -96,15 +89,28 @@ export default function Dashboard() {
 
           <Surface className="reveal p-6 md:col-span-7">
             <p className={label}>Applications per week</p>
-            <div className="mt-6 flex h-40 items-end gap-3" role="img" aria-label={`Applications per week: ${weekly.join(', ')}`}>
-              {weekly.map((n, i) => (
-                <div key={i} className="flex flex-1 flex-col items-center gap-2">
-                  <span className="font-mono text-xs text-ink-2">{n}</span>
-                  <div
-                    className={`w-full rounded-t-[6px] ${i === weekly.length - 1 ? 'bg-green-ink' : 'bg-surface-3'}`}
-                    style={{ height: `${Math.max(4, (n / maxWeek) * 100)}%`, transition: 'height 600ms var(--ease-out)' }}
-                  />
-                </div>
+            <div
+              className="mt-6 flex h-40 items-stretch gap-3 border-b border-line"
+              role="img"
+              aria-label={`Applications per week: ${weeks.map((w) => `${w.label} ${w.count}`).join(', ')}`}
+            >
+              {weeks.map((w, i) => {
+                const h = w.count === 0 ? 6 : Math.max(10, Math.round((w.count / maxWeek) * 112));
+                const current = i === weeks.length - 1;
+                return (
+                  <div key={w.weekStart} className="flex h-full flex-1 flex-col items-center justify-end gap-1.5">
+                    {w.count > 0 && <span className="font-mono text-xs tabular-nums text-ink-2">{w.count}</span>}
+                    <div
+                      className={`w-full rounded-t-[6px] ${current ? 'bg-green-ink' : 'bg-surface-3'} ${w.count === 0 ? 'opacity-50' : ''}`}
+                      style={{ height: `${h}px`, transition: 'height 600ms var(--ease-out)' }}
+                    />
+                  </div>
+                );
+              })}
+            </div>
+            <div className="mt-2 flex gap-3" aria-hidden="true">
+              {weeks.map((w) => (
+                <span key={w.weekStart} className="flex-1 text-center font-mono text-[0.6875rem] text-ink-2">{w.label}</span>
               ))}
             </div>
           </Surface>
