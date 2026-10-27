@@ -23,7 +23,7 @@ export async function POST(request: Request): Promise<Response> {
   try {
     const result = await importJob(rawUrl);
     if (!result) return json({ error: 'Could not identify the job details from this page.' }, 422);
-    return json(result);
+    return json({ data: result });
   } catch {
     return json({ error: 'Could not import this job. Enter the details manually.' }, 422);
   }
