@@ -32,7 +32,7 @@ export default async function handler(req: Request): Promise<Response> {
     // paths from both the v2 table and the legacy documents table.
     const lookup = async (table: string): Promise<string[]> => {
       const res = await fetch(
-        `${supabaseUrl}/rest/v1/${table}?user_id=eq.${user.id}&select=file_path`,
+        `${supabaseUrl}/rest/v1/${table}?user_id=eq.${encodeURIComponent(user.id)}&select=file_path`,
         { headers: adminHeaders },
       );
       if (!res.ok) throw new Error('Failed to look up stored documents');
@@ -49,7 +49,7 @@ export default async function handler(req: Request): Promise<Response> {
       if (!removeRes.ok) throw new Error('Failed to remove stored documents');
     }
 
-    const deleteRes = await fetch(`${supabaseUrl}/auth/v1/admin/users/${user.id}`, {
+    const deleteRes = await fetch(`${supabaseUrl}/auth/v1/admin/users/${encodeURIComponent(user.id)}`, {
       method: 'DELETE',
       headers: adminHeaders,
     });
@@ -57,6 +57,7 @@ export default async function handler(req: Request): Promise<Response> {
 
     return json({ success: true });
   } catch (err) {
-    return json({ error: err instanceof Error ? err.message : 'Unknown error' }, 400);
+    console.error('delete-account failed', err instanceof Error ? err.message : err);
+    return json({ error: 'Could not delete the account. Please try again.' }, 400);
   }
 }

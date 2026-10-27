@@ -14,7 +14,7 @@ export function isPrivateIp(address: string): boolean {
   if (a === '::' || a === '::1' || a.startsWith('::ffff:')) return true;
   if (a.startsWith('fc') || a.startsWith('fd')) return true;
   if (/^fe[89abcdef]/.test(a) || a.startsWith('ff')) return true;
-  if (a.startsWith('2001:db8:')) return true;
+  if (a.startsWith('2001:db8:') || a.startsWith('64:ff9b:') || a.startsWith('2002:') || a.startsWith('100::')) return true;
   const p = a.split('.').map(Number);
   if (p.length !== 4 || p.some((n) => !Number.isInteger(n) || n < 0 || n > 255)) return false;
   const [x, y, z] = p;

@@ -71,7 +71,7 @@ export default function Resumes() {
   useDocumentTitle('Resumes');
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-[100dvh] bg-background">
       <Navbar />
       <PageShell>
         <div className="flex items-end justify-between gap-4">

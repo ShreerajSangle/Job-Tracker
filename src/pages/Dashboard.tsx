@@ -64,7 +64,7 @@ export default function Dashboard() {
   const rate = stats && stats.applied ? stats.interviews / stats.applied : 0;
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-[100dvh] bg-background">
       <Navbar />
       <PageShell>
         <div className="mb-6">
@@ -72,7 +72,7 @@ export default function Dashboard() {
           <p className="text-sm text-ink-2">{new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })}</p>
         </div>
         <div className="grid grid-cols-1 gap-3 md:grid-cols-12">
-          <Surface className="reveal flex min-h-[11rem] flex-col justify-between bg-green p-6 md:col-span-4">
+          <Surface className="reveal flex min-h-[9rem] sm:min-h-[11rem] flex-col justify-between bg-green p-6 md:col-span-4">
             <p className={label}>Applied today</p>
             <div className="flex items-end justify-between">
               <span className={`${num} text-cream`}>{animToday}</span>
@@ -80,7 +80,7 @@ export default function Dashboard() {
             </div>
           </Surface>
 
-          <Surface className="reveal flex min-h-[11rem] flex-col justify-between p-6 md:col-span-4">
+          <Surface className="reveal flex min-h-[9rem] sm:min-h-[11rem] flex-col justify-between p-6 md:col-span-4">
             <p className={label}>Applied</p>
             <div className="flex items-end justify-between">
               <span className={`${num} text-green-ink`}>{stats ? animApplied : '–'}</span>
@@ -88,7 +88,7 @@ export default function Dashboard() {
             </div>
           </Surface>
 
-          <Surface className="reveal flex min-h-[11rem] flex-col justify-between p-6 md:col-span-4">
+          <Surface className="reveal flex min-h-[9rem] sm:min-h-[11rem] flex-col justify-between p-6 md:col-span-4">
             <p className={label}>Rejections</p>
             <div className="flex items-end justify-between">
               <span className={`${num} text-bordo-ink`}>{stats ? animRej : '–'}</span>

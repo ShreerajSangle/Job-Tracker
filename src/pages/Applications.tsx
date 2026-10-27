@@ -95,7 +95,7 @@ export default function Applications() {
   }, [apps, q, filter, source, view]);
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-[100dvh] bg-background">
       <Navbar />
       <PageShell>
         <div className="flex flex-wrap items-end justify-between gap-4">
@@ -168,7 +168,27 @@ export default function Applications() {
         ) : view === 'board' ? (
           <BoardView rows={rows} onOpen={(a) => setSheet({ open: true, app: a })} onMove={changeStatus} />
         ) : (
-          <div className="mt-6 overflow-x-auto rounded-[var(--r-md)] bg-surface-1">
+          <>
+          <ul className="mt-6 space-y-2 md:hidden">
+            {rows.map((a) => (
+              <li key={a.id}>
+                <div role="button" tabIndex={0} onClick={() => setSheet({ open: true, app: a })}
+                  onKeyDown={(e) => { if (e.key === 'Enter') setSheet({ open: true, app: a }); }}
+                  className="flex cursor-pointer items-center gap-3 rounded-[var(--r-md)] bg-surface-1 p-4 outline-none active:bg-surface-2 focus-visible:bg-surface-2">
+                  <CompanyAvatar company={a.company} />
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate font-semibold text-cream">{a.company}</p>
+                    <p className="truncate text-sm text-ink-2">{a.role}</p>
+                    <p className="mt-0.5 text-xs text-ink-2" title={formatDay(a.applied_on)}>
+                      {relativeDay(a.applied_on)}{needsFollowUp(a) ? ' · follow up' : ''}
+                    </p>
+                  </div>
+                  <div onClick={(e) => e.stopPropagation()}><StatusPill status={a.status} onChange={(s) => changeStatus(a, s)} /></div>
+                </div>
+              </li>
+            ))}
+          </ul>
+          <div className="mt-6 hidden overflow-x-auto rounded-[var(--r-md)] bg-surface-1 md:block">
             <table className="w-full min-w-[640px] text-left text-sm">
               <thead>
                 <tr className="text-[0.75rem] uppercase tracking-[0.02em] text-ink-2">
@@ -218,6 +238,7 @@ export default function Applications() {
               </tbody>
             </table>
           </div>
+          </>
         )}
       </PageShell>
       <ApplicationDialog open={sheet.open} application={sheet.app} onClose={() => setSheet((s) => ({ ...s, open: false }))} />

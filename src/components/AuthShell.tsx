@@ -8,7 +8,7 @@ export const authButton =
 /** Shared full-screen layout for sign-in / reset, matching the counter page. */
 export function AuthShell({ subtitle, children }: { subtitle: string; children: ReactNode }) {
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center bg-background px-6 py-16">
+    <main className="flex min-h-[100dvh] flex-col items-center justify-center bg-background px-6 py-16">
       <h1 className="text-center font-display text-[clamp(2.25rem,7vw,5rem)] font-bold uppercase leading-[0.95] tracking-[-0.04em] text-cream">
         Job Application Counter
       </h1>

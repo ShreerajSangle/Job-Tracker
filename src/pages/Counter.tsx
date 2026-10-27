@@ -26,7 +26,7 @@ export default function Counter() {
   }, []);
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center bg-background px-6 py-16">
+    <main className="flex min-h-[100dvh] flex-col items-center justify-center bg-background px-6 py-16">
       <div className="w-full max-w-4xl">
         <h1 className="text-center font-display text-[clamp(3rem,9vw,7rem)] font-bold uppercase leading-[0.95] tracking-[-0.04em] text-cream">
           Job Application Counter

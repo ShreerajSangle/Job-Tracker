@@ -97,7 +97,7 @@ export function ApplicationDialog({ open, application, onClose }: {
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="max-h-[90vh] w-[calc(100vw-2rem)] max-w-lg gap-0 overflow-y-auto rounded-[var(--r-md)] border-0 bg-surface-1 p-6 text-cream shadow-2xl shadow-black/40 sm:rounded-[var(--r-md)] sm:p-8">
+      <DialogContent className="max-h-[90dvh] w-[calc(100vw-2rem)] max-w-lg gap-0 overflow-y-auto rounded-[var(--r-md)] border-0 bg-surface-1 p-6 text-cream shadow-2xl shadow-black/40 sm:rounded-[var(--r-md)] sm:p-8">
         <DialogHeader className="mb-6 text-left">
           <DialogTitle className="font-display text-2xl font-semibold tracking-[-0.02em]">{editing ? 'Edit application' : 'Add application'}</DialogTitle>
           <DialogDescription className="text-sm text-ink-2">
