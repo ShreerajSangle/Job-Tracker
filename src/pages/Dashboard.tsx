@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowUpRight } from 'lucide-react';
 import { Navbar } from '@/components/layout/Navbar';
@@ -5,10 +6,14 @@ import { PageShell, Surface } from '@/components/Surface';
 import { useApplications } from '@/features/applications/queries';
 import { STATUS_STYLE, STATUSES } from '@/features/applications/types';
 import { useResumes } from '@/features/resumes/queries';
-import { usageByResume } from '@/features/resumes/usage';
 import { useCounterStats } from '@/features/stats/useCounterStats';
 import { useDaysLeft } from '@/features/stats/useDaysLeft';
 import { parseDay, todayISO } from '@/lib/format';
+import { greetingFor } from '@/features/dashboard/greeting';
+import { WeatherTile } from '@/features/dashboard/WeatherTile';
+import { useCountUp } from '@/features/stats/useCountUp';
+import { displayName } from '@/lib/userName';
+import { useAuth } from '@/hooks/useAuth';
 import { useDocumentTitle } from '@/lib/useDocumentTitle';
 import { weeklyCounts } from '@/features/stats/weekly';
 import { needsFollowUp } from '@/features/applications/followUp';
@@ -23,8 +28,7 @@ function Ring({ value }: { value: number }) {
       <circle cx="60" cy="60" r={r} fill="none" stroke="hsl(var(--surface-3))" strokeWidth="6" />
       <circle cx="60" cy="60" r={r} fill="none" stroke="hsl(var(--bordo-hi))" strokeWidth="6" strokeLinecap="round"
         strokeDasharray={`${c * value} ${c}`} transform="rotate(-90 60 60)" style={{ transition: 'stroke-dasharray 600ms var(--ease-out)' }} />
-      <text x="60" y="62" textAnchor="middle" className="fill-cream font-mono" fontSize="24">{Math.round(value * 100)}%</text>
-      <text x="60" y="80" textAnchor="middle" className="fill-ink-2 font-mono" fontSize="8" letterSpacing="0.5">INTERVIEW RATE</text>
+      <text x="60" y="68" textAnchor="middle" className="fill-cream font-mono" fontSize="26">{Math.round(value * 100)}%</text>
     </svg>
   );
 }
@@ -35,24 +39,29 @@ export default function Dashboard() {
   const { data: resumes = [] } = useResumes();
   const { daysLeft } = useDaysLeft();
   useDocumentTitle('Dashboard');
-  const hour = new Date().getHours();
-  const greeting = hour < 5 ? 'Still up' : hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
+  const { user } = useAuth();
+  const [now, setNow] = useState(() => new Date());
+  useEffect(() => { const t = setInterval(() => setNow(new Date()), 60_000); return () => clearInterval(t); }, []);
+  const greeting = greetingFor(now, displayName(user));
 
   const today = todayISO();
   const todayCount = apps.filter((a) => a.applied_on === today).length;
+  const yd = new Date(); yd.setDate(yd.getDate() - 1);
+  const yesterdayCount = apps.filter((a) => parseDay(a.applied_on).getTime() === new Date(yd.getFullYear(), yd.getMonth(), yd.getDate()).getTime()).length;
+  const animToday = useCountUp(todayCount);
+  const animApplied = useCountUp(stats?.applied);
+  const animRej = useCountUp(stats?.rejections);
 
   const weeks = weeklyCounts(apps.map((a) => parseDay(a.applied_on)), new Date(), 6);
+  const thisWeekCount = weeks[weeks.length - 1].count;
+  const diff = todayCount - yesterdayCount;
+  const delta = diff === 0 ? 'same as yesterday' : `${diff > 0 ? '+' : ''}${diff} vs yesterday`;
   const maxWeek = Math.max(1, ...weeks.map((w) => w.count));
 
   const byStatus = STATUSES.map((s) => ({ s, n: apps.filter((a) => a.status === s).length }));
+  const maxStatus = Math.max(1, ...byStatus.map((x) => x.n));
   const followUps = apps.filter((a) => needsFollowUp(a)).length;
   const rate = stats && stats.applied ? stats.interviews / stats.applied : 0;
-
-  const usage = usageByResume(resumes, apps);
-  const topResumes = resumes
-    .map((r) => ({ r, u: usage.get(r.id) ?? { sent: 0, interviews: 0 } }))
-    .sort((a, b) => b.u.sent - a.u.sent)
-    .slice(0, 3);
 
   return (
     <div className="min-h-screen bg-background">
@@ -66,24 +75,24 @@ export default function Dashboard() {
           <Surface className="reveal flex min-h-[11rem] flex-col justify-between bg-green p-6 md:col-span-4">
             <p className={label}>Applied today</p>
             <div className="flex items-end justify-between">
-              <span className={`${num} text-cream`}>{todayCount}</span>
-              <span className="font-mono text-sm text-ink-2">{daysLeft === null ? 'set end date on /' : `${daysLeft} days left`}</span>
+              <span className={`${num} text-cream`}>{animToday}</span>
+              <span className="text-right font-mono text-sm text-ink-2">{delta}<br />{daysLeft === null ? 'set end date on /' : `${daysLeft} days left`}</span>
             </div>
           </Surface>
 
           <Surface className="reveal flex min-h-[11rem] flex-col justify-between p-6 md:col-span-4">
             <p className={label}>Applied</p>
             <div className="flex items-end justify-between">
-              <span className={`${num} text-green-ink`}>{stats?.applied ?? '–'}</span>
-              <span className="font-mono text-sm text-ink-2">{stats?.offers ?? 0} offers</span>
+              <span className={`${num} text-green-ink`}>{stats ? animApplied : '–'}</span>
+              <span className="text-right font-mono text-sm text-ink-2">{thisWeekCount} this week<br />{stats?.offers ?? 0} offers</span>
             </div>
           </Surface>
 
           <Surface className="reveal flex min-h-[11rem] flex-col justify-between p-6 md:col-span-4">
             <p className={label}>Rejections</p>
             <div className="flex items-end justify-between">
-              <span className={`${num} text-bordo-ink`}>{stats?.rejections ?? '–'}</span>
-              <span className="font-mono text-sm text-ink-2">{stats?.interviews ?? 0} interviews</span>
+              <span className={`${num} text-bordo-ink`}>{stats ? animRej : '–'}</span>
+              <span className="text-right font-mono text-sm text-ink-2">{stats?.interviews ?? 0} interviews</span>
             </div>
           </Surface>
 
@@ -115,41 +124,32 @@ export default function Dashboard() {
             </div>
           </Surface>
 
-          <Surface className="reveal flex items-center justify-center p-6 md:col-span-5">
-            <Ring value={rate} />
+          <Surface className="reveal flex flex-col justify-between gap-4 p-6 md:col-span-5">
+            <p className={label}>Interview rate</p>
+            <div className="flex items-center justify-center"><Ring value={rate} /></div>
+            <p className="text-center font-mono text-xs text-ink-2">{stats?.interviews ?? 0} interviews from {stats?.applied ?? 0} applications</p>
           </Surface>
 
           <Surface className="reveal p-6 md:col-span-4">
             <p className={label}>Pipeline</p>
             <ul className="mt-5 space-y-3">
-              {byStatus.map(({ s, n }) => (
-                <li key={s} className="flex items-center justify-between text-sm">
-                  <span className="text-cream">{STATUS_STYLE[s].label}</span>
-                  <span className="font-mono tabular-nums text-ink-2">{n}</span>
+              {byStatus.map(({ s: st, n }) => (
+                <li key={st} className="text-sm">
+                  <div className="flex items-center justify-between">
+                    <span className="text-cream">{STATUS_STYLE[st].label}</span>
+                    <span className="font-mono tabular-nums text-ink-2">{n}</span>
+                  </div>
+                  <div className="mt-1.5 h-1 rounded-full bg-surface-3">
+                    <div className={`h-1 rounded-full ${STATUS_STYLE[st].cls.startsWith('bg-surface-3') ? 'bg-ink-2' : STATUS_STYLE[st].cls.split(' ')[0]}`}
+                      style={{ width: `${n === 0 ? 0 : Math.max(4, (n / maxStatus) * 100)}%`, transition: 'width 600ms var(--ease-out)' }} />
+                  </div>
                 </li>
               ))}
             </ul>
             {followUps > 0 && <p className="mt-4 text-xs text-cream-dim">{followUps} to follow up</p>}
           </Surface>
 
-          <Surface className="reveal p-6 md:col-span-4">
-            <p className={label}>Resume performance</p>
-            {topResumes.length === 0 ? (
-              <p className="mt-5 text-sm text-ink-2">Link a resume to an application to see results.</p>
-            ) : (
-              <ul className="mt-5 space-y-3">
-                {topResumes.map(({ r, u }) => (
-                  <li key={r.id} className="text-sm">
-                    <div className="flex justify-between"><span className="truncate text-cream">{r.name}</span>
-                      <span className="font-mono tabular-nums text-ink-2">{u.interviews}/{u.sent}</span></div>
-                    <div className="mt-1.5 h-1 rounded-full bg-surface-3">
-                      <div className="h-1 rounded-full bg-bordo-hi" style={{ width: `${u.sent ? (u.interviews / u.sent) * 100 : 0}%` }} />
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </Surface>
+          <WeatherTile />
 
           <div className="grid gap-3 md:col-span-4">
             <Link to="/" className="reveal group flex items-end justify-between rounded-[var(--r-md)] bg-cream-dim p-6 text-green transition-transform active:scale-[0.98]">
