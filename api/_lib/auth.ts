@@ -4,6 +4,9 @@
 // compatibility surface to worry about.
 export interface SupabaseUser {
   id: string;
+  email?: string;
+  email_confirmed_at?: string | null;
+  user_metadata?: Record<string, unknown>;
 }
 
 export async function verifySupabaseUser(authHeader: string | null): Promise<SupabaseUser> {
