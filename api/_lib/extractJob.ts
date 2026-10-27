@@ -182,8 +182,8 @@ async function extractWithGroq(pageText: string, finalUrl: string): Promise<Extr
   if (!result) return null;
   const p = result.data;
   return {
-    job_title: safeString(p.job_title, 200), company: safeString(p.company, 200),
-    location: safeString(p.location, 200), source: safeString(p.source, 200), notes: formatNotes(p),
+    job_title: safeString(p.job_title, 160), company: safeString(p.company, 120),
+    location: safeString(p.location, 200), source: safeString(p.source, 80), notes: formatNotes(p),
   };
 }
 

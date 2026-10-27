@@ -58,8 +58,9 @@ export function ApplicationDialog({ open, application, onClose }: {
     if ('error' in res) return toast({ title: 'Import failed', description: res.error, variant: 'destructive' });
     const r = res.data;
     setForm((f) => ({
-      ...f, role: r.job_title || f.role, company: r.company || f.company, location: r.location || f.location,
-      source: r.source || f.source, jd_text: r.notes || f.jd_text, url: r.job_link || f.url,
+      ...f, role: (r.job_title || f.role).slice(0, 160), company: (r.company || f.company).slice(0, 120),
+      location: (r.location || f.location || '').slice(0, 200), source: (r.source || f.source || '').slice(0, 80),
+      jd_text: r.notes || f.jd_text, url: r.job_link || f.url,
     }));
     toast({ title: 'Imported — review the details below' });
   };
@@ -83,7 +84,7 @@ export function ApplicationDialog({ open, application, onClose }: {
       }
       const payload: ApplicationInput = {
         ...form, company: form.company.trim(), role: form.role.trim(), resume_version_id: resumeVersionId,
-        location: form.location?.trim() || null, source: form.source?.trim() || null, url: form.url?.trim() || null,
+        location: form.location?.trim() || null, source: form.source?.trim().slice(0, 80) || null, url: form.url?.trim() || null,
         notes: form.notes?.trim() || null, jd_text: form.jd_text?.trim() || null,
       };
       if (application) await update.mutateAsync({ id: application.id, patch: payload });
@@ -126,7 +127,7 @@ export function ApplicationDialog({ open, application, onClose }: {
                 <Input value={form.location ?? ''} onChange={(e) => set('location', e.target.value)} className={control} />
               </label>
               <label className={label}>Source
-                <Input list="dlg-sources" value={form.source ?? ''} onChange={(e) => set('source', e.target.value)} className={control} placeholder="LinkedIn, Referral…" />
+                <Input list="dlg-sources" maxLength={80} value={form.source ?? ''} onChange={(e) => set('source', e.target.value)} className={control} placeholder="LinkedIn, Referral…" />
                 <datalist id="dlg-sources">{['LinkedIn', 'Indeed', 'Company site', 'Referral', 'Recruiter', 'Other'].map((x) => <option key={x} value={x} />)}</datalist>
               </label>
             </div>
