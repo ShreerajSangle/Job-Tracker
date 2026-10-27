@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Download, ExternalLink, Plus } from 'lucide-react';
+import { Download, ExternalLink, LayoutGrid, List, Plus } from 'lucide-react';
 import { Navbar } from '@/components/layout/Navbar';
 import { PageShell } from '@/components/Surface';
 import { useApplications, useUpdateApplication } from '@/features/applications/queries';
 import { StatusPill } from '@/features/applications/StatusPill';
+import { BoardView } from '@/features/applications/BoardView';
 import { ApplicationDialog } from '@/features/applications/ApplicationDialog';
 import { STATUSES, STATUS_STYLE, type Application, type ApplicationStatus } from '@/features/applications/types';
 import { openVersion, useResumes } from '@/features/resumes/queries';
@@ -24,6 +25,13 @@ export default function Applications() {
   const updateApp = useUpdateApplication();
   const [params, setParams] = useSearchParams();
   useDocumentTitle('Applications');
+  const stored = (() => { try { return localStorage.getItem('appsView'); } catch { return null; } })();
+  const view: 'list' | 'board' = (params.get('view') ?? stored) === 'board' ? 'board' : 'list';
+  const setView = (v: 'list' | 'board') => {
+    try { localStorage.setItem('appsView', v); } catch { /* private mode */ }
+    params.set('view', v);
+    setParams(params, { replace: true });
+  };
   const changeStatus = (a: Application, next: ApplicationStatus) => {
     if (next === a.status) return;
     const prev = a.status;
@@ -81,10 +89,10 @@ export default function Applications() {
   const rows = useMemo(() => {
     const s = q.trim().toLowerCase();
     return apps.filter((a) =>
-      (filter === 'all' || a.status === filter) &&
+      (filter === 'all' || view === 'board' || a.status === filter) &&
       (source === 'all' || a.source === source) &&
       (!s || a.company.toLowerCase().includes(s) || a.role.toLowerCase().includes(s)));
-  }, [apps, q, filter, source]);
+  }, [apps, q, filter, source, view]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -96,6 +104,14 @@ export default function Applications() {
             <p className="mt-1 text-sm text-ink-2">{apps.length} total</p>
           </div>
           <div className="flex items-center gap-2">
+          <div className="flex rounded-full bg-surface-3 p-1" role="group" aria-label="View">
+            {([['list', List, 'List'], ['board', LayoutGrid, 'Board']] as const).map(([v, Icon, name]) => (
+              <button key={v} type="button" onClick={() => setView(v)} aria-pressed={view === v} aria-label={`${name} view`} title={`${name} view`}
+                className={`flex h-8 w-8 items-center justify-center rounded-full transition-colors ${view === v ? 'bg-bordo text-cream' : 'text-ink-2 hover:text-cream'}`}>
+                <Icon className="h-4 w-4" />
+              </button>
+            ))}
+          </div>
           <button onClick={exportCsv} disabled={!rows.length} aria-label="Export CSV" title="Export CSV"
             className="flex h-10 w-10 items-center justify-center rounded-full bg-surface-3 text-cream transition-transform hover:bg-surface-2 active:scale-[0.95] disabled:opacity-40">
             <Download className="h-4 w-4" />
@@ -127,7 +143,7 @@ export default function Applications() {
               {sources.map((x) => <option key={x} value={x}>{x}</option>)}
             </select>
           )}
-          <div className="flex flex-wrap gap-1.5">
+          <div className={`flex flex-wrap gap-1.5 ${view === 'board' ? 'hidden' : ''}`}>
             {(['all', ...STATUSES] as const).map((s) => (
               <button
                 key={s}
@@ -149,6 +165,8 @@ export default function Applications() {
             <p className="font-display text-xl text-cream">{apps.length ? 'No matches' : 'No applications yet'}</p>
             {!apps.length && <p className="mt-2 text-sm text-ink-2">Press <kbd className="rounded bg-surface-3 px-1.5">n</kbd> or tap + to add your first.</p>}
           </div>
+        ) : view === 'board' ? (
+          <BoardView rows={rows} onOpen={(a) => setSheet({ open: true, app: a })} onMove={changeStatus} />
         ) : (
           <div className="mt-6 overflow-x-auto rounded-[var(--r-md)] bg-surface-1">
             <table className="w-full min-w-[640px] text-left text-sm">
