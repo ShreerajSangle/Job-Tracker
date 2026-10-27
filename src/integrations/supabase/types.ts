@@ -197,6 +197,87 @@ export type Database = {
         }
         Relationships: []
       }
+      application_stages: {
+        Row: {
+          application_id: string
+          completed_at: string | null
+          created_at: string
+          id: string
+          name: string
+          position: number
+          stage_type: string
+          started_at: string | null
+          state: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          application_id: string
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          name: string
+          position?: number
+          stage_type?: string
+          started_at?: string | null
+          state?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Update: {
+          application_id?: string
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          name?: string
+          position?: number
+          stage_type?: string
+          started_at?: string | null
+          state?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      application_stage_events: {
+        Row: {
+          application_id: string
+          event_type: string
+          from_status: string | null
+          id: string
+          notes: string | null
+          occurred_at: string
+          stage_id: string | null
+          stage_name_snapshot: string | null
+          to_status: string | null
+          user_id: string
+        }
+        Insert: {
+          application_id: string
+          event_type: string
+          from_status?: string | null
+          id?: string
+          notes?: string | null
+          occurred_at?: string
+          stage_id?: string | null
+          stage_name_snapshot?: string | null
+          to_status?: string | null
+          user_id: string
+        }
+        Update: {
+          application_id?: string
+          event_type?: string
+          from_status?: string | null
+          id?: string
+          notes?: string | null
+          occurred_at?: string
+          stage_id?: string | null
+          stage_name_snapshot?: string | null
+          to_status?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       applications: {
         Row: {
           applied_on: string
@@ -204,11 +285,15 @@ export type Database = {
           created_at: string
           ever_interviewed: boolean
           id: string
+          jd_text: string | null
           legacy_job_id: string | null
           location: string | null
           notes: string | null
+          rejected_at: string | null
+          rejected_stage_name: string | null
           resume_version_id: string | null
           role: string
+          source: string | null
           status: Database["public"]["Enums"]["application_status"]
           updated_at: string
           url: string | null
@@ -220,11 +305,15 @@ export type Database = {
           created_at?: string
           ever_interviewed?: boolean
           id?: string
+          jd_text?: string | null
           legacy_job_id?: string | null
           location?: string | null
           notes?: string | null
+          rejected_at?: string | null
+          rejected_stage_name?: string | null
           resume_version_id?: string | null
           role: string
+          source?: string | null
           status?: Database["public"]["Enums"]["application_status"]
           updated_at?: string
           url?: string | null
@@ -236,11 +325,15 @@ export type Database = {
           created_at?: string
           ever_interviewed?: boolean
           id?: string
+          jd_text?: string | null
           legacy_job_id?: string | null
           location?: string | null
           notes?: string | null
+          rejected_at?: string | null
+          rejected_stage_name?: string | null
           resume_version_id?: string | null
           role?: string
+          source?: string | null
           status?: Database["public"]["Enums"]["application_status"]
           updated_at?: string
           url?: string | null
@@ -324,6 +417,7 @@ export type Database = {
       user_settings: {
         Row: {
           created_at: string
+          monthly_analysis_enabled: boolean
           portfolio_public: boolean
           portfolio_slug: string | null
           search_ends_on: string | null
@@ -331,6 +425,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          monthly_analysis_enabled?: boolean
           portfolio_public?: boolean
           portfolio_slug?: string | null
           search_ends_on?: string | null
@@ -338,6 +433,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          monthly_analysis_enabled?: boolean
           portfolio_public?: boolean
           portfolio_slug?: string | null
           search_ends_on?: string | null
@@ -365,7 +461,7 @@ export type Database = {
       }
     }
     Enums: {
-      application_status: "applied" | "interviewing" | "offer" | "rejected" | "withdrawn"
+      application_status: "bookmarked" | "applied" | "interviewing" | "offer" | "rejected" | "withdrawn" | "ghosted"
       document_type:
         | "resume"
         | "cover_letter"
@@ -516,7 +612,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      application_status: ["applied", "interviewing", "offer", "rejected", "withdrawn"],
+      application_status: ["bookmarked", "applied", "interviewing", "offer", "rejected", "withdrawn", "ghosted"],
       document_type: [
         "resume",
         "cover_letter",

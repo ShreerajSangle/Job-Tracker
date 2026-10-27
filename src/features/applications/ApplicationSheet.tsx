@@ -5,11 +5,12 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { todayISO } from '@/lib/format';
 import { useResumes } from '@/features/resumes/queries';
+import { LifecyclePanel } from './LifecyclePanel';
 import { useCreateApplication, useDeleteApplication, useUpdateApplication } from './queries';
 import { STATUSES, STATUS_STYLE, type Application, type ApplicationInput, type ApplicationStatus } from './types';
 
 const blank = (): ApplicationInput => ({
-  company: '', role: '', location: '', url: '', status: 'applied', applied_on: todayISO(), notes: '', resume_version_id: null,
+  company: '', role: '', location: '', url: '', status: 'applied', applied_on: todayISO(), notes: '', resume_version_id: null, source: '', jd_text: '',
 });
 
 const field = 'space-y-1.5 text-xs font-medium uppercase tracking-[0.02em] text-ink-2';
@@ -29,7 +30,8 @@ export function ApplicationSheet({ open, application, onClose }: {
     if (!open) return;
     setForm(application
       ? { company: application.company, role: application.role, location: application.location ?? '', url: application.url ?? '',
-          status: application.status, applied_on: application.applied_on, notes: application.notes ?? '', resume_version_id: application.resume_version_id }
+          status: application.status, applied_on: application.applied_on, notes: application.notes ?? '', resume_version_id: application.resume_version_id,
+          source: application.source ?? '', jd_text: application.jd_text ?? '' }
       : blank());
   }, [open, application]);
 
@@ -40,7 +42,7 @@ export function ApplicationSheet({ open, application, onClose }: {
     const payload: ApplicationInput = {
       ...form,
       company: form.company.trim(), role: form.role.trim(),
-      location: form.location?.trim() || null, url: form.url?.trim() || null, notes: form.notes?.trim() || null,
+      location: form.location?.trim() || null, source: form.source?.trim() || null, jd_text: form.jd_text?.trim() || null, url: form.url?.trim() || null, notes: form.notes?.trim() || null,
     };
     if (application) update.mutate({ id: application.id, patch: payload }, { onSuccess: onClose });
     else create.mutate(payload, { onSuccess: onClose });
@@ -72,6 +74,10 @@ export function ApplicationSheet({ open, application, onClose }: {
           <label className={field}>Location
             <Input value={form.location ?? ''} onChange={(e) => set('location', e.target.value)} className={control} />
           </label>
+          <label className={field}>Source
+            <Input list="sources" value={form.source ?? ''} onChange={(e) => set('source', e.target.value)} className={control} placeholder="LinkedIn, Referral…" />
+            <datalist id="sources">{['LinkedIn', 'Indeed', 'Company site', 'Referral', 'Recruiter', 'Other'].map((x) => <option key={x} value={x} />)}</datalist>
+          </label>
           <label className={field}>Link
             <Input type="url" placeholder="https://" value={form.url ?? ''} onChange={(e) => set('url', e.target.value)} className={control} />
           </label>
@@ -86,6 +92,9 @@ export function ApplicationSheet({ open, application, onClose }: {
           <label className={field}>Notes
             <Textarea rows={5} value={form.notes ?? ''} onChange={(e) => set('notes', e.target.value)} className={control} />
           </label>
+          <label className={field}>Job description
+            <Textarea rows={4} value={form.jd_text ?? ''} onChange={(e) => set('jd_text', e.target.value)} className={control} />
+          </label>
           <div className="flex items-center justify-between pt-2">
             {application ? (
               <button type="button" className="text-sm text-bordo-ink hover:underline"
@@ -98,6 +107,7 @@ export function ApplicationSheet({ open, application, onClose }: {
             </Button>
           </div>
         </form>
+        {application && <div className="mt-8"><LifecyclePanel applicationId={application.id} /></div>}
       </SheetContent>
     </Sheet>
   );

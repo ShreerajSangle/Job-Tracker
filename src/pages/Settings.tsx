@@ -43,6 +43,24 @@ export default function Settings() {
     setPasswordLoading(false);
   };
 
+  // Wipes applications (stages/history cascade), resumes + their files, and settings; keeps the login.
+  const handleDeleteData = async () => {
+    if (window.prompt('This permanently deletes all your applications and resumes.\nType "delete my data" to confirm.') !== 'delete my data') return;
+    try {
+      const { data: versions } = await supabase.from('resume_versions').select('file_path');
+      const paths = (versions ?? []).map((v) => v.file_path);
+      if (paths.length) await supabase.storage.from('job-documents').remove(paths);
+      for (const t of ['applications', 'resumes'] as const) {
+        const { error } = await supabase.from(t).delete().not('id', 'is', null);
+        if (error) throw error;
+      }
+      await supabase.from('user_settings').delete().not('user_id', 'is', null);
+      toast({ title: 'All your data was deleted' });
+    } catch (err) {
+      toast({ title: 'Could not delete all data', description: (err as Error).message, variant: 'destructive' });
+    }
+  };
+
   const handleDeleteAccount = async () => {
     setDeleteLoading(true);
     try {
@@ -163,6 +181,16 @@ export default function Settings() {
                   </div>
                 ))}
               </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Your data</CardTitle>
+              <CardDescription>Remove all applications, stages, resumes and files. Your login stays.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button variant="outline" onClick={handleDeleteData}>Delete all my data</Button>
             </CardContent>
           </Card>
 
