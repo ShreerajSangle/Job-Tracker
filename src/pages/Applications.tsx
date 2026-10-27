@@ -9,6 +9,7 @@ import { STATUSES, STATUS_STYLE, type Application, type ApplicationStatus } from
 import { openVersion, useResumes } from '@/features/resumes/queries';
 import { formatDay } from '@/lib/format';
 import { toCsv } from '@/lib/csv';
+import { CompanyAvatar } from '@/components/CompanyAvatar';
 import { useAllStages } from '@/features/applications/stageQueries';
 
 export default function Applications() {
@@ -147,7 +148,7 @@ export default function Applications() {
                       onKeyDown={(e) => { if (e.key === 'Enter') setSheet({ open: true, app: a }); }}
                       className="reveal h-14 cursor-pointer outline-none transition-colors hover:bg-surface-2 focus-visible:bg-surface-2"
                     >
-                      <td className="px-4 font-semibold text-cream">{a.company}</td>
+                      <td className="px-4 font-semibold text-cream"><div className="flex items-center gap-3"><CompanyAvatar company={a.company} />{a.company}</div></td>
                       <td className="max-w-[16rem] truncate px-4 text-cream">{a.role}</td>
                       <td className="hidden px-4 text-ink-2 lg:table-cell">{a.location || '—'}</td>
                       <td className="px-4">

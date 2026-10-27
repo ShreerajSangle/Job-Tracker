@@ -58,3 +58,24 @@ export async function groqJson<T>(messages: GroqMessage[], opts: GroqJsonOptions
   }
   return null;
 }
+
+/** Groq Compound (web_search + visit_website). Output is untrusted. */
+export async function groqWebJson<T>(messages: GroqMessage[], model = 'groq/compound-mini', timeoutMs = 20_000): Promise<T | null> {
+  const key = process.env.GROQ_API_KEY?.trim();
+  if (!key) return null;
+  try {
+    const res = await fetch(ENDPOINT, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json', 'Groq-Model-Version': 'latest' },
+      signal: AbortSignal.timeout(timeoutMs),
+      body: JSON.stringify({
+        model, temperature: 0, response_format: { type: 'json_object' }, messages,
+        compound_custom: { tools: { enabled_tools: ['web_search', 'visit_website'] } },
+      }),
+    });
+    if (!res.ok) return null;
+    const payload = (await res.json()) as { choices?: { message?: { content?: string } }[] };
+    const content = payload.choices?.[0]?.message?.content?.trim();
+    return content ? parseJsonContent<T>(content) : null;
+  } catch { return null; }
+}
