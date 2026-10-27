@@ -63,13 +63,13 @@ export const STATUS_CONFIG: Record<JobStatus, {
   borderColor: string;
   icon: string;
 }> = {
-  saved:        { label: 'Saved',        color: 'text-white', bgColor: 'bg-[hsl(var(--status-saved))]',        borderColor: 'border-transparent', icon: 'saved' },
-  applied:      { label: 'Applied',      color: 'text-white', bgColor: 'bg-[hsl(var(--status-applied))]',      borderColor: 'border-transparent', icon: 'applied' },
-  interviewing: { label: 'Interviewing', color: 'text-white', bgColor: 'bg-[hsl(var(--status-interviewing))]', borderColor: 'border-transparent', icon: 'interviewing' },
-  offered:      { label: 'Offered',      color: 'text-white', bgColor: 'bg-[hsl(var(--status-offered))]',      borderColor: 'border-transparent', icon: 'offered' },
-  accepted:     { label: 'Accepted',     color: 'text-white', bgColor: 'bg-[hsl(var(--status-accepted))]',     borderColor: 'border-transparent', icon: 'accepted' },
-  rejected:     { label: 'Rejected',     color: 'text-white', bgColor: 'bg-[hsl(var(--status-rejected))]',     borderColor: 'border-transparent', icon: 'rejected' },
-  withdrawn:    { label: 'Withdrawn',    color: 'text-white', bgColor: 'bg-[hsl(var(--status-withdrawn))]',    borderColor: 'border-transparent', icon: 'withdrawn' },
+  saved:        { label: 'Saved',        color: 'text-cream', bgColor: 'bg-[hsl(var(--status-saved))]',        borderColor: 'border-transparent', icon: 'saved' },
+  applied:      { label: 'Applied',      color: 'text-cream', bgColor: 'bg-[hsl(var(--status-applied))]',      borderColor: 'border-transparent', icon: 'applied' },
+  interviewing: { label: 'Interviewing', color: 'text-cream', bgColor: 'bg-[hsl(var(--status-interviewing))]', borderColor: 'border-transparent', icon: 'interviewing' },
+  offered:      { label: 'Offered',      color: 'text-cream', bgColor: 'bg-[hsl(var(--status-offered))]',      borderColor: 'border-transparent', icon: 'offered' },
+  accepted:     { label: 'Accepted',     color: 'text-cream', bgColor: 'bg-[hsl(var(--status-accepted))]',     borderColor: 'border-transparent', icon: 'accepted' },
+  rejected:     { label: 'Rejected',     color: 'text-cream', bgColor: 'bg-[hsl(var(--status-rejected))]',     borderColor: 'border-transparent', icon: 'rejected' },
+  withdrawn:    { label: 'Withdrawn',    color: 'text-cream', bgColor: 'bg-[hsl(var(--status-withdrawn))]',    borderColor: 'border-transparent', icon: 'withdrawn' },
 };
 
 export const SOURCE_CONFIG: Record<JobSource, {

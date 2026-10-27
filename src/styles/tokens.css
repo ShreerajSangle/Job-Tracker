@@ -1,0 +1,80 @@
+/* Design tokens — palette: cream #F5DABF, bordo #6C151E, green #0F3D3A.
+   Dark-first; surfaces are derived from the green. The shadcn variable names
+   are kept so existing components re-theme without edits. */
+:root {
+  /* raw palette */
+  --cream: 30 73% 85%;
+  --cream-dim: 33 45% 80%;
+  --green: 176 61% 15%;
+  --bordo: 354 67% 25%;
+  --bordo-hi: 355 62% 34%;
+  --bordo-ink: 355 59% 70%;
+  --green-ink: 172 36% 54%;
+  --ink-2: 32 25% 62%;
+
+  /* surfaces */
+  --bg: 180 36% 5%;
+  --surface-1: 175 32% 8%;
+  --surface-2: 176 29% 11%;
+  --surface-3: 177 26% 15%;
+  --line: 177 20% 20%;
+
+  /* shadcn semantic mapping */
+  --background: var(--bg);
+  --foreground: var(--cream);
+  --card: var(--surface-1);
+  --card-foreground: var(--cream);
+  --popover: var(--surface-2);
+  --popover-foreground: var(--cream);
+  --primary: var(--bordo);
+  --primary-foreground: var(--cream);
+  --secondary: var(--surface-3);
+  --secondary-foreground: var(--cream);
+  --muted: var(--surface-2);
+  --muted-foreground: var(--ink-2);
+  --accent: var(--surface-3);
+  --accent-foreground: var(--cream);
+  --destructive: var(--bordo-hi);
+  --destructive-foreground: var(--cream);
+  --border: var(--line);
+  --input: var(--line);
+  --ring: var(--green-ink);
+
+  /* status fills (used with cream text) */
+  --status-saved: 177 15% 30%;
+  --status-applied: 176 55% 24%;
+  --status-interviewing: 33 45% 36%;
+  --status-offered: 172 45% 34%;
+  --status-accepted: 172 50% 28%;
+  --status-rejected: var(--bordo);
+  --status-withdrawn: 177 12% 26%;
+
+  --sidebar-background: var(--surface-1);
+  --sidebar-foreground: var(--cream);
+  --sidebar-primary: var(--bordo);
+  --sidebar-primary-foreground: var(--cream);
+  --sidebar-accent: var(--surface-3);
+  --sidebar-accent-foreground: var(--cream);
+  --sidebar-border: var(--line);
+  --sidebar-ring: var(--green-ink);
+
+  /* radius */
+  --radius: 1rem;
+  --r-sm: 10px;
+  --r-md: 16px;
+  --r-lg: 24px;
+
+  /* type */
+  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
+  --font-display: "Poppins", var(--font-sans);
+  --font-mono: ui-monospace, "SF Mono", Menlo, monospace;
+
+  /* motion */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --dur-fast: 150ms;
+  --dur-ui: 350ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root { --dur-fast: 1ms; --dur-ui: 1ms; }
+}

@@ -5,7 +5,7 @@
 (function () {
   try {
     var stored = localStorage.getItem('theme');
-    var isDark = stored ? stored === 'dark' : true;
+    var isDark = true;
     document.documentElement.classList.toggle('dark', isDark);
     if (!stored) localStorage.setItem('theme', 'dark');
   } catch (e) {

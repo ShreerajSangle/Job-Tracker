@@ -7,7 +7,7 @@ import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { AuthRecoveryRedirect } from "@/components/AuthRecoveryRedirect";
 import { JobsProvider } from "@/context/JobsContext";
-import Index from "./pages/Index";
+import Counter from "./pages/Counter";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import ResetPassword from "./pages/ResetPassword";
@@ -27,7 +27,7 @@ const App = () => (
         <BrowserRouter>
           <AuthRecoveryRedirect />
           <Routes>
-            <Route path="/" element={<Index />} />
+            <Route path="/" element={<ProtectedRoute><Counter /></ProtectedRoute>} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
             <Route path="/reset-password" element={<ResetPassword />} />

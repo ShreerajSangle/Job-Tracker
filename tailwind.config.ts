@@ -14,7 +14,18 @@ export default {
       },
     },
     extend: {
+      fontFamily: {
+        sans: ["var(--font-sans)"],
+        display: ["var(--font-display)"],
+        mono: ["var(--font-mono)"],
+      },
       colors: {
+        cream: { DEFAULT: "hsl(var(--cream))", dim: "hsl(var(--cream-dim))" },
+        bordo: { DEFAULT: "hsl(var(--bordo))", hi: "hsl(var(--bordo-hi))", ink: "hsl(var(--bordo-ink))" },
+        green: { DEFAULT: "hsl(var(--green))", ink: "hsl(var(--green-ink))" },
+        "ink-2": "hsl(var(--ink-2))",
+        surface: { 1: "hsl(var(--surface-1))", 2: "hsl(var(--surface-2))", 3: "hsl(var(--surface-3))" },
+        line: "hsl(var(--line))",
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
