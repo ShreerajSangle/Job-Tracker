@@ -18,18 +18,6 @@ export function useAuth() {
     return () => subscription.unsubscribe();
   }, []);
 
-  const signUp = async (email: string, password: string) => {
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        // Redirect to /dashboard after email confirmation instead of homepage
-        emailRedirectTo: `${window.location.origin}/dashboard`,
-      },
-    });
-    return { data, error };
-  };
-
   const signIn = async (email: string, password: string) => {
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
     return { data, error };
@@ -52,5 +40,5 @@ export function useAuth() {
     return { data, error };
   };
 
-  return { user, session, loading, signUp, signIn, signOut, resetPasswordForEmail, updatePassword };
+  return { user, session, loading, signIn, signOut, resetPasswordForEmail, updatePassword };
 }
