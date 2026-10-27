@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useCounterStats } from '@/features/stats/useCounterStats';
 import { useDaysLeft } from '@/features/stats/useDaysLeft';
 import { useCountUp } from '@/features/stats/useCountUp';
@@ -19,16 +19,11 @@ export default function Counter() {
   const { endsOn, daysLeft, setEndsOn } = useDaysLeft();
   const [editing, setEditing] = useState(false);
   const [hint, setHint] = useState(false);
-  const navigate = useNavigate();
 
   useEffect(() => {
     const t = setTimeout(() => setHint(true), 1200);
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Enter' && !(e.target instanceof HTMLInputElement)) navigate('/dashboard');
-    };
-    window.addEventListener('keydown', onKey);
-    return () => { clearTimeout(t); window.removeEventListener('keydown', onKey); };
-  }, [navigate]);
+    return () => clearTimeout(t);
+  }, []);
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-center bg-background px-6 py-16">
@@ -69,7 +64,7 @@ export default function Counter() {
 
         <div className={`mt-16 text-center transition-opacity duration-700 ${hint ? 'opacity-100' : 'opacity-0'}`}>
           <Link to="/dashboard" className="text-xs uppercase tracking-[0.08em] text-ink-2 hover:text-cream">
-            Enter ↵
+            Open dashboard
           </Link>
         </div>
       </div>

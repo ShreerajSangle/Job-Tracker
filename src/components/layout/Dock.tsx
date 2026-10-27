@@ -1,40 +1,16 @@
 import { useEffect, useRef, useState } from 'react';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
-import { Briefcase, FileText, LogOut, Plus, Settings } from 'lucide-react';
+import { Briefcase, FileText, Home, Plus } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useApplications } from '@/features/applications/queries';
 import { useResumes } from '@/features/resumes/queries';
-import { useCounterStats } from '@/features/stats/useCounterStats';
+import { initialsFor } from '@/lib/userName';
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 
 const item = 'dock-item group relative flex h-14 min-w-14 items-center justify-center rounded-full text-ink-2 outline-none transition-[background-color,color] duration-150 hover:text-cream focus-visible:ring-2 focus-visible:ring-ring';
 const tip = 'pointer-events-none absolute -top-10 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-surface-3 px-3 py-1 text-xs text-cream opacity-0 transition-opacity duration-150 group-hover:opacity-100 group-focus-visible:opacity-100';
-
-/** Keyboard: g d / g a / g r / g c to jump, n for a new application. */
-function useShortcuts() {
-  const navigate = useNavigate();
-  useEffect(() => {
-    let armed = 0;
-    const onKey = (e: KeyboardEvent) => {
-      const t = e.target as HTMLElement;
-      if (e.metaKey || e.ctrlKey || e.altKey) return;
-      if (['INPUT', 'TEXTAREA', 'SELECT'].includes(t.tagName) || t.isContentEditable) return;
-      if (document.querySelector('[role="dialog"]')) return;
-      const k = e.key.toLowerCase();
-      if (armed && Date.now() - armed < 1000) {
-        const to = { d: '/dashboard', a: '/applications', r: '/resumes', c: '/' }[k];
-        armed = 0;
-        if (to) { e.preventDefault(); navigate(to); return; }
-      }
-      if (k === 'g') armed = Date.now();
-      else if (k === 'n') { e.preventDefault(); navigate('/applications?new=1'); }
-    };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [navigate]);
-}
 
 /** Small count badge that pulses once whenever the number changes. */
 function Badge({ n }: { n: number | undefined }) {
@@ -63,10 +39,8 @@ export function Dock() {
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const bar = useRef<HTMLElement>(null);
-  const { data: stats } = useCounterStats();
   const { data: apps } = useApplications();
   const { data: resumes } = useResumes();
-  useShortcuts();
 
   const interviewing = apps?.filter((a) => a.status === 'interviewing').length;
 
@@ -100,18 +74,20 @@ export function Dock() {
       aria-label="Main"
       className="fixed bottom-[max(1rem,env(safe-area-inset-bottom))] left-1/2 z-50 flex max-w-[calc(100vw-1rem)] -translate-x-1/2 items-end gap-1.5 rounded-full border border-cream/10 bg-surface-1/70 p-2 shadow-2xl shadow-black/40 backdrop-blur-xl backdrop-saturate-150 [@media(prefers-reduced-transparency:reduce)]:bg-surface-1 [@media(prefers-reduced-transparency:reduce)]:backdrop-blur-none"
     >
-      <NavLink to="/" end aria-label="Counter" className={({ isActive }) => `${item} px-4 ${isActive ? 'bg-surface-3 text-cream' : ''}`}>
-        <span className={tip}>Counter · g c</span>
-        <span className="flex flex-col items-center leading-none">
-          <span className="font-mono text-xl tabular-nums text-green-ink">{stats ? stats.applied : '–'}</span>
-          <span className="mt-1 text-[0.6rem] uppercase tracking-[0.06em]">applied</span>
-        </span>
+      <NavLink to="/dashboard" aria-label="Home" className={({ isActive }) => `${item} w-14 ${isActive ? 'bg-surface-3 text-cream' : ''}`}>
+        {({ isActive }) => (
+          <>
+            <span className={tip}>Home</span>
+            <Home className="h-6 w-6" />
+            {isActive && <span className="absolute -bottom-0.5 h-1 w-1 rounded-full bg-green-ink" />}
+          </>
+        )}
       </NavLink>
 
       <NavLink to="/applications" aria-label="Applications" className={({ isActive }) => `${item} w-14 ${isActive ? 'bg-surface-3 text-cream' : ''}`}>
         {({ isActive }) => (
           <>
-            <span className={tip}>Applications · g a</span>
+            <span className={tip}>Applications</span>
             <Briefcase className="h-6 w-6" />
             <Badge n={interviewing} />
             {isActive && <span className="absolute -bottom-0.5 h-1 w-1 rounded-full bg-green-ink" />}
@@ -121,14 +97,14 @@ export function Dock() {
 
       <button type="button" aria-label="New application" onClick={() => navigate('/applications?new=1')}
         className={`${item} w-16 bg-bordo text-cream hover:bg-bordo-hi`}>
-        <span className={tip}>New · n</span>
+        <span className={tip}>New</span>
         <Plus className="h-7 w-7" />
       </button>
 
       <NavLink to="/resumes" aria-label="Resumes" className={({ isActive }) => `${item} w-14 ${isActive ? 'bg-surface-3 text-cream' : ''}`}>
         {({ isActive }) => (
           <>
-            <span className={tip}>Resumes · g r</span>
+            <span className={tip}>Resumes</span>
             <FileText className="h-6 w-6" />
             <Badge n={resumes?.length} />
             {isActive && <span className="absolute -bottom-0.5 h-1 w-1 rounded-full bg-green-ink" />}
@@ -140,13 +116,11 @@ export function Dock() {
         <DropdownMenu>
           <DropdownMenuTrigger aria-label="Account" className={`${item} w-14 text-sm font-semibold ${pathname === '/settings' ? 'bg-surface-3 text-cream' : ''}`}>
             <span className={tip}>Account</span>
-            {(user.email ?? 'JT').slice(0, 2).toUpperCase()}
+            {initialsFor(user)}
           </DropdownMenuTrigger>
-          <DropdownMenuContent side="top" align="end" sideOffset={16} className="w-56">
-            <p className="px-2 py-1.5 text-xs text-ink-2">{user.email}</p>
-            <DropdownMenuItem onClick={() => navigate('/dashboard')}><Briefcase className="mr-2 h-4 w-4" />Dashboard</DropdownMenuItem>
-            <DropdownMenuItem onClick={() => navigate('/settings')}><Settings className="mr-2 h-4 w-4" />Settings</DropdownMenuItem>
-            <DropdownMenuItem onClick={async () => { await signOut(); navigate('/login'); }}><LogOut className="mr-2 h-4 w-4" />Sign out</DropdownMenuItem>
+          <DropdownMenuContent side="top" align="end" sideOffset={16} className="w-44">
+            <DropdownMenuItem onClick={() => navigate('/settings')}>Settings</DropdownMenuItem>
+            <DropdownMenuItem onClick={async () => { await signOut(); navigate('/login'); }}>Logout</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       )}

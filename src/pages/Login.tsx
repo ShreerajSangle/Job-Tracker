@@ -20,7 +20,7 @@ export default function Login() {
     if (mode === 'signin') {
       const { error } = await signIn(email.trim(), password);
       if (error) toast({ title: 'Sign in failed', description: error.message, variant: 'destructive' });
-      else navigate('/', { replace: true });
+      else navigate('/dashboard', { replace: true });
     } else {
       const { error } = await resetPasswordForEmail(email.trim());
       if (error) toast({ title: 'Could not send reset email', description: error.message, variant: 'destructive' });

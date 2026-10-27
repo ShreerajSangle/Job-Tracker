@@ -23,7 +23,7 @@ export default function ResetPasswordPage() {
       return;
     }
     toast({ title: 'Password updated' });
-    navigate('/', { replace: true });
+    navigate('/dashboard', { replace: true });
   };
 
   return (

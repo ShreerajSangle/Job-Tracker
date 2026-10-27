@@ -63,15 +63,6 @@ export default function Applications() {
     }
   }, [params, setParams]);
 
-  useEffect(() => {
-    const h = (e: KeyboardEvent) => {
-      const t = e.target as HTMLElement;
-      if (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.tagName === 'SELECT') return;
-      if (e.key === '/') { e.preventDefault(); search.current?.focus(); }
-    };
-    window.addEventListener('keydown', h);
-    return () => window.removeEventListener('keydown', h);
-  }, []);
 
   const versions = useMemo(() => {
     const m = new Map<string, { label: string; file_path: string }>();
@@ -128,7 +119,7 @@ export default function Applications() {
           <button
             onClick={() => setSheet({ open: true, app: null })}
             aria-label="New application"
-            title="New application (n)"
+            title="New application"
             className="flex h-10 w-10 items-center justify-center rounded-full bg-bordo text-cream transition-transform hover:bg-bordo-hi active:scale-[0.95]"
           >
             <Plus className="h-5 w-5" />
@@ -141,7 +132,7 @@ export default function Applications() {
             ref={search}
             value={q}
             onChange={(e) => setQ(e.target.value)}
-            placeholder="Search  /  ·  ⌘K for everything"
+            placeholder="Search"
             aria-label="Search applications"
             className="w-full max-w-xs rounded-full bg-surface-2 px-4 py-2 text-sm text-cream outline-none placeholder:text-ink-2 focus:ring-2 focus:ring-ring"
           />

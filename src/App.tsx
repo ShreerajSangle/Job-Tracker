@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { AuthRecoveryRedirect } from "@/components/AuthRecoveryRedirect";
+import { ShortcutsMount } from "@/components/ShortcutsMount";
 import Counter from "./pages/Counter";
 import Login from "./pages/Login";
 import ResetPassword from "./pages/ResetPassword";
@@ -27,6 +28,7 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <AuthRecoveryRedirect />
+          <ShortcutsMount />
           <Routes>
             <Route path="/" element={<ProtectedRoute><Counter /></ProtectedRoute>} />
             <Route path="/login" element={<Login />} />

@@ -1,9 +1,9 @@
 import { useState } from 'react';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Navbar } from '@/components/layout/Navbar';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { callApi } from '@/lib/callApi';
+import { displayName } from '@/lib/userName';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -18,36 +18,21 @@ import {
 
 export default function Settings() {
   const { user, signOut } = useAuth();
-  const qc = useQueryClient();
-  const monthly = useQuery({
-    queryKey: ['monthly-analysis', user?.id], enabled: !!user,
-    queryFn: async () => {
-      const { data, error } = await supabase.from('user_settings').select('monthly_analysis_enabled').maybeSingle();
-      if (error) throw error;
-      return data?.monthly_analysis_enabled ?? false;
-    },
-  });
-  const toggleMonthly = useMutation({
-    mutationFn: async (on: boolean) => {
-      const { error } = await supabase.from('user_settings').upsert({ user_id: user!.id, monthly_analysis_enabled: on });
-      if (error) throw error;
-    },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['monthly-analysis'] }),
-    onError: (e: Error) => toast({ title: 'Could not save preference', description: e.message, variant: 'destructive' }),
-  });
-  const [sending, setSending] = useState(false);
-  const sendReport = async () => {
-    setSending(true);
-    const res = await callApi<{ ok: boolean }>('/api/analysis-report', {});
-    setSending(false);
-    if ('error' in res) toast({ title: 'Could not send report', description: res.error, variant: 'destructive' });
-    else toast({ title: 'Report sent', description: `Check ${user?.email} for your PDF.` });
-  };
   const [newPassword, setNewPassword]           = useState('');
   const [confirmPassword, setConfirmPassword]   = useState('');
   const [passwordLoading, setPasswordLoading]   = useState(false);
   const [deleteLoading, setDeleteLoading]       = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [name, setName] = useState(displayName(user));
+  const [savingName, setSavingName] = useState(false);
+  const saveName = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSavingName(true);
+    const { error } = await supabase.auth.updateUser({ data: { full_name: name.trim() } });
+    setSavingName(false);
+    if (error) toast({ title: 'Could not save name', description: error.message, variant: 'destructive' });
+    else toast({ title: 'Name saved' });
+  };
 
   const handlePasswordChange = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -134,13 +119,16 @@ export default function Settings() {
               <CardDescription>Your account details</CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
+              <form onSubmit={saveName} className="flex items-end gap-2">
+                <div className="flex-1 space-y-1.5">
+                  <Label htmlFor="display-name" className="text-xs text-muted-foreground">Display name</Label>
+                  <Input id="display-name" value={name} maxLength={60} placeholder="Your name" onChange={(e) => setName(e.target.value)} autoComplete="name" />
+                </div>
+                <Button type="submit" disabled={savingName || name.trim() === displayName(user)}>{savingName ? 'Saving…' : 'Save'}</Button>
+              </form>
               <div>
                 <Label className="text-xs text-muted-foreground">Email</Label>
                 <p className="text-sm font-medium mt-0.5">{user?.email}</p>
-              </div>
-              <div>
-                <Label className="text-xs text-muted-foreground">Account ID</Label>
-                <p className="text-xs text-muted-foreground font-mono mt-0.5 truncate">{user?.id}</p>
               </div>
               <div>
                 <Label className="text-xs text-muted-foreground">Member since</Label>
@@ -189,7 +177,6 @@ export default function Settings() {
             </CardContent>
           </Card>
 
-          {/* Keyboard shortcuts */}
           <Card>
             <CardHeader>
               <CardTitle className="text-base">Keyboard Shortcuts</CardTitle>
@@ -207,21 +194,6 @@ export default function Settings() {
                   </div>
                 ))}
               </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">AI analysis</CardTitle>
-              <CardDescription>A PDF of your pipeline metrics with AI observations, emailed to {user?.email}. Resumes, notes and job descriptions are never sent to the model.</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <Button variant="outline" onClick={sendReport} disabled={sending}>{sending ? 'Generating…' : 'Email me my analysis'}</Button>
-              <label className="flex items-center gap-3 text-sm">
-                <input type="checkbox" className="h-4 w-4 accent-[hsl(var(--bordo))]" checked={!!monthly.data} disabled={monthly.isLoading || toggleMonthly.isPending}
-                  onChange={(e) => toggleMonthly.mutate(e.target.checked)} />
-                Send me an analysis automatically at the end of each month
-              </label>
             </CardContent>
           </Card>
 

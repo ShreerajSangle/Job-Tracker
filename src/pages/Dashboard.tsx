@@ -146,12 +146,12 @@ export default function Dashboard() {
           </Surface>
 
           <div className="grid gap-3 md:col-span-4">
-            <Link to="/applications" className="reveal group flex items-end justify-between rounded-[var(--r-md)] bg-cream-dim p-6 text-green transition-transform active:scale-[0.98]">
-              <span className="font-display text-2xl font-semibold leading-tight tracking-[-0.01em]">Applications<br /><span className="font-mono text-sm font-normal">{apps.length} total</span></span>
+            <Link to="/" className="reveal group flex items-end justify-between rounded-[var(--r-md)] bg-cream-dim p-6 text-green transition-transform active:scale-[0.98]">
+              <span className="font-display text-2xl font-semibold leading-tight tracking-[-0.01em]">Job Application Counter<br /><span className="font-mono text-sm font-normal">{stats?.applied ?? '–'} applied</span></span>
               <ArrowUpRight className="h-6 w-6 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
             </Link>
             <Link to="/resumes" className="reveal group flex items-end justify-between rounded-[var(--r-md)] bg-bordo p-6 text-cream transition-transform active:scale-[0.98]">
-              <span className="font-display text-2xl font-semibold leading-tight tracking-[-0.01em]">Resumes<br /><span className="font-mono text-sm font-normal">{resumes.length} on file</span></span>
+              <span className="font-display text-2xl font-semibold leading-tight tracking-[-0.01em]">Total Resumes<br /><span className="font-mono text-sm font-normal">{resumes.length}</span></span>
               <ArrowUpRight className="h-6 w-6 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
             </Link>
           </div>
