@@ -4,7 +4,7 @@ import { Navbar } from '@/components/layout/Navbar';
 import { PageShell } from '@/components/Surface';
 import { useApplications, useSetStatus } from '@/features/applications/queries';
 import { StatusPill } from '@/features/applications/StatusPill';
-import { ApplicationSheet } from '@/features/applications/ApplicationSheet';
+import { ApplicationDialog } from '@/features/applications/ApplicationDialog';
 import { STATUSES, STATUS_STYLE, type Application, type ApplicationStatus } from '@/features/applications/types';
 import { openVersion, useResumes } from '@/features/resumes/queries';
 import { formatDay } from '@/lib/format';
@@ -179,7 +179,7 @@ export default function Applications() {
           </div>
         )}
       </PageShell>
-      <ApplicationSheet open={sheet.open} application={sheet.app} onClose={() => setSheet((s) => ({ ...s, open: false }))} />
+      <ApplicationDialog open={sheet.open} application={sheet.app} onClose={() => setSheet((s) => ({ ...s, open: false }))} />
     </div>
   );
 }

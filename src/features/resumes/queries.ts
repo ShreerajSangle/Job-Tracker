@@ -67,7 +67,7 @@ export function useUploadVersion() {
       const up = await supabase.storage.from(BUCKET).upload(path, file);
       const cleanup = async () => { if (createdResume && id) await supabase.from('resumes').delete().eq('id', id); };
       if (up.error) { await cleanup(); throw up.error; }
-      const { error } = await supabase.rpc('add_resume_version', {
+      const { data: version, error } = await supabase.rpc('add_resume_version', {
         p_resume: id, p_path: path, p_name: file.name, p_size: file.size,
       });
       if (error) {
@@ -75,6 +75,7 @@ export function useUploadVersion() {
         await cleanup();
         throw error;
       }
+      return version;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ['resumes'] }),
     onError: (e: Error) => toast({ title: 'Upload failed', description: e.message, variant: 'destructive' }),
