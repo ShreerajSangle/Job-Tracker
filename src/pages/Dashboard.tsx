@@ -10,6 +10,7 @@ import { useCounterStats } from '@/features/stats/useCounterStats';
 import { useDaysLeft } from '@/features/stats/useDaysLeft';
 import { parseDay, todayISO } from '@/lib/format';
 import { useDocumentTitle } from '@/lib/useDocumentTitle';
+import { needsFollowUp } from '@/features/applications/followUp';
 
 const label = 'font-mono text-[0.75rem] uppercase tracking-[0.04em] text-ink-2';
 const num = 'font-mono text-[clamp(2.25rem,5vw,3.5rem)] leading-none tracking-[-0.02em] tabular-nums';
@@ -51,6 +52,7 @@ export default function Dashboard() {
   const maxWeek = Math.max(1, ...weekly);
 
   const byStatus = STATUSES.map((s) => ({ s, n: apps.filter((a) => a.status === s).length }));
+  const followUps = apps.filter((a) => needsFollowUp(a)).length;
   const rate = stats && stats.applied ? stats.interviews / stats.applied : 0;
 
   const usage = usageByResume(resumes, apps);
@@ -121,6 +123,7 @@ export default function Dashboard() {
                 </li>
               ))}
             </ul>
+            {followUps > 0 && <p className="mt-4 text-xs text-cream-dim">{followUps} to follow up</p>}
           </Surface>
 
           <Surface className="reveal p-6 md:col-span-4">

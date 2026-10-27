@@ -417,6 +417,7 @@ export type Database = {
       user_settings: {
         Row: {
           created_at: string
+          daily_goal: number
           monthly_analysis_enabled: boolean
           portfolio_public: boolean
           portfolio_slug: string | null
@@ -425,6 +426,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          daily_goal?: number
           monthly_analysis_enabled?: boolean
           portfolio_public?: boolean
           portfolio_slug?: string | null
@@ -433,6 +435,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          daily_goal?: number
           monthly_analysis_enabled?: boolean
           portfolio_public?: boolean
           portfolio_slug?: string | null

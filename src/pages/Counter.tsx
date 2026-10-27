@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useCounterStats } from '@/features/stats/useCounterStats';
 import { useDaysLeft } from '@/features/stats/useDaysLeft';
 import { useCountUp } from '@/features/stats/useCountUp';
+import { GoalRing } from '@/features/stats/GoalRing';
 
 function Metric({ label, value, className }: { label: string; value: number | undefined; className: string }) {
   const shown = useCountUp(value);
@@ -63,6 +64,8 @@ export default function Counter() {
           <Metric label="REJECTIONS" value={data?.rejections} className="text-bordo-ink" />
           <Metric label="INTERVIEWS" value={data?.interviews} className="text-cream-dim" />
         </div>
+
+        <GoalRing />
 
         <div className={`mt-16 text-center transition-opacity duration-700 ${hint ? 'opacity-100' : 'opacity-0'}`}>
           <Link to="/dashboard" className="text-xs uppercase tracking-[0.08em] text-ink-2 hover:text-cream">

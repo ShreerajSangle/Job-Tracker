@@ -13,6 +13,7 @@ import { useDocumentTitle } from '@/lib/useDocumentTitle';
 import { toast } from '@/hooks/use-toast';
 import { ToastAction } from '@/components/ui/toast';
 import { toCsv } from '@/lib/csv';
+import { needsFollowUp } from '@/features/applications/followUp';
 import { CompanyAvatar } from '@/components/CompanyAvatar';
 import { useAllStages } from '@/features/applications/stageQueries';
 
@@ -176,6 +177,7 @@ export default function Applications() {
                         <div className="flex items-center gap-2">
                           <StatusPill status={a.status} onChange={(s) => changeStatus(a, s)} />
                           {a.status === 'interviewing' && currentStage.get(a.id) && <span className="hidden truncate text-xs text-ink-2 sm:inline">{currentStage.get(a.id)}</span>}
+                          {needsFollowUp(a) && <span className="hidden items-center gap-1 text-xs text-cream-dim sm:inline-flex" title="No activity for a week"><span className="h-1.5 w-1.5 rounded-full bg-cream-dim" />Follow up</span>}
                           {a.status === 'rejected' && a.rejected_stage_name && <span className="hidden truncate text-xs text-ink-2 sm:inline">at {a.rejected_stage_name}</span>}
                         </div>
                       </td>
