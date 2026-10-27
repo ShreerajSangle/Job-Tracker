@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { Dock } from './Dock';
+import { CommandPalette } from '@/components/CommandPalette';
 
 /** Slim centered wordmark on top; navigation lives in the bottom dock. */
 export function Navbar() {
@@ -13,6 +14,7 @@ export function Navbar() {
         </div>
       </header>
       <Dock />
+      <CommandPalette />
     </>
   );
 }

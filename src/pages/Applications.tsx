@@ -47,6 +47,15 @@ export default function Applications() {
   const [sheet, setSheet] = useState<{ open: boolean; app: Application | null }>({ open: false, app: null });
   const search = useRef<HTMLInputElement>(null);
   useEffect(() => {
+    const id = params.get('id');
+    const found = id ? apps.find((a) => a.id === id) : null;
+    if (found) {
+      setSheet({ open: true, app: found });
+      params.delete('id');
+      setParams(params, { replace: true });
+    }
+  }, [params, setParams, apps]);
+  useEffect(() => {
     if (params.get('new') === '1') {
       setSheet({ open: true, app: null });
       params.delete('new');
@@ -132,7 +141,7 @@ export default function Applications() {
             ref={search}
             value={q}
             onChange={(e) => setQ(e.target.value)}
-            placeholder="Search  /"
+            placeholder="Search  /  ·  ⌘K for everything"
             aria-label="Search applications"
             className="w-full max-w-xs rounded-full bg-surface-2 px-4 py-2 text-sm text-cream outline-none placeholder:text-ink-2 focus:ring-2 focus:ring-ring"
           />
