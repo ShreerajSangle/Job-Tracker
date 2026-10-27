@@ -1,7 +1,7 @@
 // Job-posting import: structured data first (JSON-LD, meta, embedded SPA JSON,
 // Oracle Recruiting REST), then Groq to normalise. Page text is untrusted.
-import { fetchPinned, headerValue } from './ssrf';
-import { groqJson, uniqueModels } from './groq';
+import { fetchPinned, headerValue } from './ssrf.js';
+import { groqJson, uniqueModels } from './groq.js';
 
 const MAX_HTML = 1_000_000;
 const MAX_NOTES = 5_000;

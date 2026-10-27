@@ -1,7 +1,7 @@
 // GET ?company=Name → the company's logo bytes (proxied from our origin), or 404.
-import { verifySupabaseUser } from './_lib/auth';
-import { findCompanyLogo } from './_lib/logo';
-import { rateLimited } from './_lib/rateLimit';
+import { verifySupabaseUser } from './_lib/auth.js';
+import { findCompanyLogo } from './_lib/logo.js';
+import { rateLimited } from './_lib/rateLimit.js';
 
 export const config = { maxDuration: 30 };
 

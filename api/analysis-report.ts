@@ -1,6 +1,6 @@
 // POST → emails the signed-in user a PDF analysis of their pipeline.
-import { verifySupabaseUser, json } from './_lib/auth';
-import { ReportSkip, rest, sendApplicationAnalysis } from './_lib/reportService';
+import { verifySupabaseUser, json } from './_lib/auth.js';
+import { ReportSkip, rest, sendApplicationAnalysis } from './_lib/reportService.js';
 
 export const config = { maxDuration: 45 };
 const COOLDOWN_MS = 15 * 60 * 1000;

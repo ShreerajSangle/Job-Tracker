@@ -1,8 +1,8 @@
 // Shared by the manual endpoint and the month-end cron: load → metrics → AI → PDF → Resend.
 import { z } from 'zod';
-import { aiPayload, buildSnapshot, type AnalysisJob, type AnalysisStage } from './analysis';
-import { buildAnalysisPdf, type Insights } from './analysisPdf';
-import { groqJson, uniqueModels } from './groq';
+import { aiPayload, buildSnapshot, type AnalysisJob, type AnalysisStage } from './analysis.js';
+import { buildAnalysisPdf, type Insights } from './analysisPdf.js';
+import { groqJson, uniqueModels } from './groq.js';
 
 export class ReportSkip extends Error {
   constructor(public code: 'unconfirmed_email' | 'no_applications' | 'already_sent') { super(code); }

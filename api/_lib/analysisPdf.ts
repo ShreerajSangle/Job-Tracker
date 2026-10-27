@@ -1,5 +1,5 @@
 import { PDFDocument, StandardFonts, rgb, type PDFFont, type PDFPage } from 'pdf-lib';
-import type { Snapshot } from './analysis';
+import type { Snapshot } from './analysis.js';
 
 export interface Insights { summary: string; strengths: string[]; bottlenecks: string[]; patterns: string[]; recommendations: string[]; next7Days: string[] }
 

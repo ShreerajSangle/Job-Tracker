@@ -7,7 +7,7 @@
 // job_status_history and job_documents — this function only needs to remove
 // the Storage objects those job_documents rows point to, since Storage
 // isn't covered by DB cascades.
-import { verifySupabaseUser, json, corsHeaders } from './_lib/auth';
+import { verifySupabaseUser, json, corsHeaders } from './_lib/auth.js';
 
 export const config = { runtime: 'edge' };
 

@@ -1,8 +1,8 @@
 // POST { url } → structured job details for pre-filling the application form.
 // Nothing is saved here; the client always shows the result for review.
-import { verifySupabaseUser, json } from '../_lib/auth';
-import { importJob } from '../_lib/extractJob';
-import { rateLimited } from '../_lib/rateLimit';
+import { verifySupabaseUser, json } from '../_lib/auth.js';
+import { importJob } from '../_lib/extractJob.js';
+import { rateLimited } from '../_lib/rateLimit.js';
 
 export const config = { maxDuration: 30 };
 

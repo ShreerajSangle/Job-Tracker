@@ -1,8 +1,8 @@
 // Vercel Cron (0 18 28-31 * *): sends only on the real last UTC day of the month,
 // once per user per month, to confirmed users who opted in.
 import { timingSafeEqual } from 'node:crypto';
-import { isLastUtcDayOfMonth, monthKey } from '../_lib/analysis';
-import { admin, ReportSkip, rest, sendApplicationAnalysis, type ReportUser } from '../_lib/reportService';
+import { isLastUtcDayOfMonth, monthKey } from '../_lib/analysis.js';
+import { admin, ReportSkip, rest, sendApplicationAnalysis, type ReportUser } from '../_lib/reportService.js';
 
 export const config = { maxDuration: 300 };
 

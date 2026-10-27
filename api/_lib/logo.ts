@@ -1,10 +1,10 @@
 // Company logo discovery: cache → domain (small model) → official-site favicon/logo
 // discovery → (last resort) Groq Compound web search. Every URL, including AI
 // proposals, goes through the pinned SSRF-safe fetch and a raster magic-byte check.
-import { fetchPinned, headerValue } from './ssrf';
-import { groqJson, groqWebJson, uniqueModels } from './groq';
-import { companyKey, readLogoCache, writeLogoCache } from './logoCache';
-import { decodeHtml } from './extractJob';
+import { fetchPinned, headerValue } from './ssrf.js';
+import { groqJson, groqWebJson, uniqueModels } from './groq.js';
+import { companyKey, readLogoCache, writeLogoCache } from './logoCache.js';
+import { decodeHtml } from './extractJob.js';
 
 export interface Logo { bytes: Buffer; type: string }
 const MAX_ICON = 256 * 1024;
