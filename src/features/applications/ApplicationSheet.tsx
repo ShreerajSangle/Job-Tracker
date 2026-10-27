@@ -6,6 +6,9 @@ import { Button } from '@/components/ui/button';
 import { todayISO } from '@/lib/format';
 import { useResumes } from '@/features/resumes/queries';
 import { LifecyclePanel } from './LifecyclePanel';
+import { importJobFromUrl, isHttpUrl } from './importJob';
+import { toast } from '@/hooks/use-toast';
+import { Sparkles } from 'lucide-react';
 import { useCreateApplication, useDeleteApplication, useUpdateApplication } from './queries';
 import { STATUSES, STATUS_STYLE, type Application, type ApplicationInput, type ApplicationStatus } from './types';
 
@@ -48,6 +51,23 @@ export function ApplicationSheet({ open, application, onClose }: {
     else create.mutate(payload, { onSuccess: onClose });
   };
 
+  const [importing, setImporting] = useState(false);
+  const runImport = async () => {
+    const url = (form.url ?? '').trim();
+    if (!isHttpUrl(url)) return toast({ title: 'Enter a valid http(s) job link first', variant: 'destructive' });
+    setImporting(true);
+    const res = await importJobFromUrl(url);
+    setImporting(false);
+    if ('error' in res) return toast({ title: 'Import failed', description: res.error, variant: 'destructive' });
+    const r = res.data;
+    setForm((f) => ({
+      ...f,
+      role: r.job_title || f.role, company: r.company || f.company, location: r.location || f.location,
+      source: r.source || f.source, jd_text: r.notes || f.jd_text, url: r.job_link || f.url,
+    }));
+    toast({ title: 'Imported — review the details before saving' });
+  };
+
   const busy = create.isPending || update.isPending;
 
   return (
@@ -81,6 +101,12 @@ export function ApplicationSheet({ open, application, onClose }: {
           <label className={field}>Link
             <Input type="url" placeholder="https://" value={form.url ?? ''} onChange={(e) => set('url', e.target.value)} className={control} />
           </label>
+          {!application && (
+            <button type="button" onClick={runImport} disabled={importing || !form.url}
+              className="inline-flex items-center gap-2 rounded-full bg-surface-3 px-4 py-2 text-sm text-cream transition-transform hover:bg-green active:scale-[0.97] disabled:opacity-50">
+              <Sparkles className="h-4 w-4" /> {importing ? 'Importing…' : 'Import details from link'}
+            </button>
+          )}
           <label className={field}>Resume
             <select value={form.resume_version_id ?? ''} onChange={(e) => set('resume_version_id', e.target.value || null)} className={control}>
               <option value="">None</option>

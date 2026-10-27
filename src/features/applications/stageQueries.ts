@@ -95,3 +95,30 @@ export function useDeleteStage() {
     onSuccess: refresh, onError: fail,
   });
 }
+
+/** Keep the lifecycle consistent with a status chosen by hand (mirrors the reference tracker). */
+export async function syncStagesForStatus(applicationId: string, status: string) {
+  const { data } = await supabase.from('application_stages').select('*').eq('application_id', applicationId);
+  const stages = (data ?? []) as Stage[];
+  if (status === 'bookmarked') {
+    if (stages.some((s) => s.state !== 'pending')) {
+      await supabase.from('application_stages').update({ state: 'pending', started_at: null, completed_at: null }).eq('application_id', applicationId);
+    }
+    await supabase.from('applications').update({ rejected_at: null, rejected_stage_name: null }).eq('id', applicationId);
+    return;
+  }
+  const now = new Date().toISOString();
+  if (!stages.some((s) => s.stage_type === 'application')) {
+    await supabase.from('application_stages').insert({
+      application_id: applicationId, name: 'Applied', stage_type: 'application', position: 0,
+      state: 'completed', started_at: now, completed_at: now,
+    });
+  }
+  const current = stages.find((s) => s.state === 'current');
+  if (status === 'rejected' && !stages.some((s) => s.state === 'rejected')) {
+    const target = current ?? [...stages].filter((s) => s.state === 'completed').sort((a, b) => b.position - a.position)[0];
+    if (target) await supabase.from('application_stages').update({ state: 'rejected', completed_at: now }).eq('id', target.id);
+  } else if (status === 'offer' && current) {
+    await supabase.from('application_stages').update({ state: 'completed', completed_at: now }).eq('id', current.id);
+  }
+}

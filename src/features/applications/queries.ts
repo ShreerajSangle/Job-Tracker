@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from '@/hooks/use-toast';
+import { syncStagesForStatus } from './stageQueries';
 import type { Application, ApplicationInput, ApplicationStatus } from './types';
 
 export const appKeys = { all: ['applications'] as const };
@@ -31,6 +32,8 @@ function useInvalidate() {
     qc.invalidateQueries({ queryKey: appKeys.all }),
     qc.invalidateQueries({ queryKey: ['stats'] }),
     qc.invalidateQueries({ queryKey: ['resumes'] }),
+    qc.invalidateQueries({ queryKey: ['stages'] }),
+    qc.invalidateQueries({ queryKey: ['stage-events'] }),
   ]);
 }
 
@@ -42,6 +45,7 @@ export function useCreateApplication() {
     mutationFn: async (input: ApplicationInput) => {
       const { data, error } = await supabase.from('applications').insert(input).select().single();
       if (error) throw error;
+      await syncStagesForStatus(data.id, data.status);
       return data;
     },
     onSuccess: invalidate,
@@ -56,6 +60,7 @@ export function useUpdateApplication() {
     mutationFn: async ({ id, patch }: { id: string; patch: Partial<ApplicationInput> }) => {
       const { data, error } = await supabase.from('applications').update(patch).eq('id', id).select().single();
       if (error) throw error;
+      if (patch.status) await syncStagesForStatus(id, patch.status);
       return data;
     },
     onMutate: async ({ id, patch }) => {
