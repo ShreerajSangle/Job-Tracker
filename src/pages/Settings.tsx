@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from '@/hooks/use-toast';
-import { Loader2, User, Lock, Trash2, Moon, Sun } from 'lucide-react';
+import { Loader2, User, Lock, Trash2 } from 'lucide-react';
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel,
   AlertDialogContent, AlertDialogDescription,
@@ -22,18 +22,6 @@ export default function Settings() {
   const [passwordLoading, setPasswordLoading]   = useState(false);
   const [deleteLoading, setDeleteLoading]       = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-
-  // Read from the html class directly — always in sync with Navbar toggle
-  const [theme, setTheme] = useState<'light' | 'dark'>(
-    () => document.documentElement.classList.contains('dark') ? 'dark' : 'light'
-  );
-
-  const toggleTheme = () => {
-    const next: 'light' | 'dark' = theme === 'dark' ? 'light' : 'dark';
-    setTheme(next);
-    document.documentElement.classList.toggle('dark', next === 'dark');
-    try { localStorage.setItem('theme', next); } catch {/* private mode */}
-  };
 
   const handlePasswordChange = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -92,31 +80,6 @@ export default function Settings() {
         </div>
 
         <div className="space-y-6">
-
-          {/* Appearance */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-base">
-                {theme === 'dark' ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
-                Appearance
-              </CardTitle>
-              <CardDescription>Toggle between light and dark mode</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center justify-between rounded-lg border border-border/40 p-3">
-                <div>
-                  <p className="text-sm font-medium">Theme</p>
-                  <p className="text-xs text-muted-foreground">Currently {theme} mode</p>
-                </div>
-                <Button variant="outline" size="sm" onClick={toggleTheme} className="gap-2">
-                  {theme === 'dark'
-                    ? <><Sun className="h-4 w-4" /> Switch to Light</>
-                    : <><Moon className="h-4 w-4" /> Switch to Dark</>
-                  }
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
 
           {/* Account Info */}
           <Card>

@@ -197,14 +197,175 @@ export type Database = {
         }
         Relationships: []
       }
+      applications: {
+        Row: {
+          applied_on: string
+          company: string
+          created_at: string
+          ever_interviewed: boolean
+          id: string
+          legacy_job_id: string | null
+          location: string | null
+          notes: string | null
+          resume_version_id: string | null
+          role: string
+          status: Database["public"]["Enums"]["application_status"]
+          updated_at: string
+          url: string | null
+          user_id: string
+        }
+        Insert: {
+          applied_on?: string
+          company: string
+          created_at?: string
+          ever_interviewed?: boolean
+          id?: string
+          legacy_job_id?: string | null
+          location?: string | null
+          notes?: string | null
+          resume_version_id?: string | null
+          role: string
+          status?: Database["public"]["Enums"]["application_status"]
+          updated_at?: string
+          url?: string | null
+          user_id?: string
+        }
+        Update: {
+          applied_on?: string
+          company?: string
+          created_at?: string
+          ever_interviewed?: boolean
+          id?: string
+          legacy_job_id?: string | null
+          location?: string | null
+          notes?: string | null
+          resume_version_id?: string | null
+          role?: string
+          status?: Database["public"]["Enums"]["application_status"]
+          updated_at?: string
+          url?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "applications_resume_version_id_user_id_fkey"
+            columns: ["resume_version_id", "user_id"]
+            isOneToOne: false
+            referencedRelation: "resume_versions"
+            referencedColumns: ["id", "user_id"]
+          },
+        ]
+      }
+      resume_versions: {
+        Row: {
+          created_at: string
+          file_name: string
+          file_path: string
+          file_size: number
+          id: string
+          resume_id: string
+          user_id: string
+          version: number
+        }
+        Insert: {
+          created_at?: string
+          file_name: string
+          file_path: string
+          file_size: number
+          id?: string
+          resume_id: string
+          user_id?: string
+          version: number
+        }
+        Update: {
+          created_at?: string
+          file_name?: string
+          file_path?: string
+          file_size?: number
+          id?: string
+          resume_id?: string
+          user_id?: string
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "resume_versions_resume_id_user_id_fkey"
+            columns: ["resume_id", "user_id"]
+            isOneToOne: false
+            referencedRelation: "resumes"
+            referencedColumns: ["id", "user_id"]
+          },
+        ]
+      }
+      resumes: {
+        Row: {
+          archived_at: string | null
+          created_at: string
+          id: string
+          name: string
+          user_id: string
+        }
+        Insert: {
+          archived_at?: string | null
+          created_at?: string
+          id?: string
+          name: string
+          user_id?: string
+        }
+        Update: {
+          archived_at?: string | null
+          created_at?: string
+          id?: string
+          name?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_settings: {
+        Row: {
+          created_at: string
+          portfolio_public: boolean
+          portfolio_slug: string | null
+          search_ends_on: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          portfolio_public?: boolean
+          portfolio_slug?: string | null
+          search_ends_on?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          portfolio_public?: boolean
+          portfolio_slug?: string | null
+          search_ends_on?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
-      [_ in never]: never
+      application_stats: {
+        Row: {
+          applied: number | null
+          interviews: number | null
+          offers: number | null
+          rejections: number | null
+          user_id: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
-      [_ in never]: never
+      add_resume_version: {
+        Args: { p_name: string; p_path: string; p_resume: string; p_size: number }
+        Returns: Database["public"]["Tables"]["resume_versions"]["Row"]
+      }
     }
     Enums: {
+      application_status: "applied" | "interviewing" | "offer" | "rejected" | "withdrawn"
       document_type:
         | "resume"
         | "cover_letter"
@@ -355,6 +516,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      application_status: ["applied", "interviewing", "offer", "rejected", "withdrawn"],
       document_type: [
         "resume",
         "cover_letter",

@@ -28,18 +28,23 @@ export default async function handler(req: Request): Promise<Response> {
       Authorization: `Bearer ${serviceRoleKey}`,
     };
 
-    const docsRes = await fetch(
-      `${supabaseUrl}/rest/v1/job_documents?user_id=eq.${user.id}&select=file_path`,
-      { headers: adminHeaders },
-    );
-    if (!docsRes.ok) throw new Error('Failed to look up stored documents');
-    const docs: { file_path: string }[] = await docsRes.json();
+    // Resume files live in Storage, which DB cascades don't cover: collect the
+    // paths from both the v2 table and the legacy documents table.
+    const lookup = async (table: string): Promise<string[]> => {
+      const res = await fetch(
+        `${supabaseUrl}/rest/v1/${table}?user_id=eq.${user.id}&select=file_path`,
+        { headers: adminHeaders },
+      );
+      if (!res.ok) throw new Error('Failed to look up stored documents');
+      return ((await res.json()) as { file_path: string }[]).map((d) => d.file_path);
+    };
+    const docs = [...(await lookup('resume_versions')), ...(await lookup('job_documents'))];
 
     if (docs.length > 0) {
       const removeRes = await fetch(`${supabaseUrl}/storage/v1/object/job-documents`, {
         method: 'DELETE',
         headers: { ...adminHeaders, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prefixes: docs.map((d) => d.file_path) }),
+        body: JSON.stringify({ prefixes: docs }),
       });
       if (!removeRes.ok) throw new Error('Failed to remove stored documents');
     }
